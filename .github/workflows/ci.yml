@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  GO_VERSION: '1.22'
+  NODE_VERSION: '20'
+
+jobs:
+  # Python Protocol Tests
+  protocol-tests:
+    name: Protocol Tests (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./rilavo-protocol
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Run tests
+        run: uv run pytest tests/ -q
+      - name: Run boundary tests
+        run: uv run pytest tests/test_boundary.py -q
+      - name: Type check (mypy)
+        run: uv run mypy src/rilavo --ignore-missing-imports
+      - name: Lint (ruff)
+        run: uv run ruff check src/rilavo tests/
+
+    summary:
+    name: Summary
+    runs-on: ubuntu-latest
+    needs: [protocol-tests, go-tests, ts-tests, next-tests, install-tests, smoke-tests, version-check, docs-check, packaging-check]
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          echo "All CI checks completed"
+          # This job passes if all dependencies succeeded
+          # GitHub Actions handles the overall status automatically

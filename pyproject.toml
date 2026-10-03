@@ -1,0 +1,42 @@
+[project]
+name = "rilavo"
+version = "0.1.0"
+description = "Rilavo Protocol reference implementation - stateless signed agent authorization credentials"
+readme = "README.md"
+requires-python = ">=3.10,<3.13"
+license = { text = "Apache-2.0" }
+dependencies = [
+    "redis>=5.0",
+    "cryptography>=42",
+    "opentelemetry-api>=1.44.0",
+    "opentelemetry-sdk>=1.44.0",
+    "opentelemetry-exporter-prometheus==0.65b0",
+    "opentelemetry-exporter-otlp>=1.44.0",
+    "opentelemetry-instrumentation==0.65b0",
+    "opentelemetry-instrumentation-logging==0.65b0",
+]
+keywords = ["agents", "authorization", "credentials", "ed25519", "mcp", "opentelemetry"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security :: Cryptography",
+  "Topic :: System :: Monitoring",
+]
+
+[project.scripts]
+rilavo = "rilavo.cli:main"
+rilavo-service = "rilavo.service_entry:main"
+rilavo-conformance = "rilavo.conformance_cli:main"
+
+[dependency-groups]
+dev = [
+    "pyyaml","pytest>=8", "fastapi>=0.100", "httpx>=0.24"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rilavo"]

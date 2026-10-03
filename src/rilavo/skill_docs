@@ -1,0 +1,68 @@
+---
+name: autonomous-cognitive-architectures
+description: Build and evaluate structured cognitive architectures (dual-brain, loop-closing self-awareness, heartbeat-driven continuous improvement, gap-analysis with verified source references).
+---
+
+# Autonomous Cognitive Architectures (2ndBrain / Rilavo-class)
+
+This session produced an autonomous continuous-improvement architecture that runs
+a 30-minute heartbeat cycle (cron), executes improvement cycles through a
+prime-agent orchestration harness, verifies all work independently, and logs
+results to an append-only journal. The substance requires honest gap analysis,
+not scaffold claims.
+
+## Key patterns from the session
+
+### Dual-brain gap: substance vs skeleton
+The 2ndBrain architecture audit found: design 46/46, blueprints ~80%, code ~55%.
+The real gap is NOT structure — it's loop-closing self-awareness substance (~45%).
+The skeleton is present; the substance (what actually closes the awareness loop,
+what verifies the awareness claim, what the heartbeat reports when awareness
+fails) is missing. Report this honestly; don't rename skeleton as substance.
+
+### The heartbeat must produce real cycles, not empty status
+The earlier broken heartbeat delivered empty "ok" without completed work.
+The correct design: every 30-min fire reads IMPROVEMENT_LOG.md, picks the
+next unfinished domain from PACKAGING_PLAN.md, researches via web + source
+inspection, writes a concrete blueprint, dispatches a scoped item via
+prime-agent, verifies with full test suites, and logs the actual result.
+Without completed-cycle logging, the heartbeat is cosmetic, not autonomous.
+
+### Continuous verification ladder (four levels)
+1. **Own tests**: new test file passes (test_versioning.py, test_runbook.py, etc.)
+2. **Full suite**: all existing protocol + enterprise + boundary tests stay green
+3. **Cross-language**: golden-corpus byte-parity (Python/TS/Go share identical
+   fixtures; JCS subset serialization identical; PoP payload identical)
+4. **Integration**: does the public entry point actually forward new params?
+   (Real catch: do_verify accepted leeway_seconds but never forwarded to verify())
+
+Every cycle must hit at least 3 of these 4 levels in its verification report.
+
+### Two-pass verification (§9) — mandatory for every cycle
+- Pass 1: agent's own tests
+- Pass 2: independently re-derive requirements from source docs (wave_2 docs,
+  P-06/P-32 checklists, master dependency register) and confirm against
+  actual source. The second pass found real bugs: IssueRequest field names,
+  missing DECISION_LOG entries, parameter forwarding failures.
+
+### The 6-item packaging plan completed this session
+Phase 1 (language SDKs): P1-A1 skeleton, P1-A2 real Ed25519 verification,
+P1-A3 cross-language issuance (byte-parity golden vectors), P1-A4 packaging
+hygiene (ESM+CJS dual build, 12.1 KB tarball).
+Phase 2 (framework): P2-A1 Next middleware skeleton, P2-A2 end-to-end harness,
+P2-B1 WSGI+ASGI middleware promoted to pip module.
+Results: protocol 240/1skip, enterprise 132, TS 18/18, Go PASS.
+
+### Real-world gap analysis — 7 scenario families
+Documented with verified source references and honest classification:
+- WORKS-TODAY: single-instance verification (<0.5ms p50), verifier compromise
+  blast-radius bounded, clock-skew zero-tolerance (deliberate)
+- WORKS-WITH-CAVEATS: multi-audience agents (batch issuance solves this),
+  cross-replica revocation propagation (needs shared store proposal),
+  legal/jurisdictional (operational choice, not protocol constraint)
+- GAP: infrastructureless issuers (Rilavo ACME enrollment protocol needed),
+  SMS/NFC constrained channels (<160B compact encoding proposal)
+
+Every claim traces to source line numbers (e.g. verifier.py line 102 audience
+binding, line 104 time window, line 145 retroactive compromise).
+No inflated claims; no scaffold presented as production.

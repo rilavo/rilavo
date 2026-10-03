@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Rilavo Discovery Document",
+  "type": "object",
+  "required": [
+    "entries"
+  ],
+  "properties": {
+    "rilavo_discovery_version": {
+      "type": "integer",
+      "description": "Absent means 1 (P-26 style)."
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "issuer_id",
+          "public_key_pem"
+        ],
+        "properties": {
+          "issuer_id": {
+            "type": "string",
+            "pattern": "^rilavo:iss:[0-9a-f]{16}$"
+          },
+          "public_key_pem": {
+            "type": "string",
+            "pattern": "-----BEGIN PUBLIC KEY-----"
+          },
+          "valid_until": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Unix seconds; null = active"
+          },
+          "audience_hints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "directory_signed_payload": {
+            "type": "object",
+            "description": "Optional D3 signed envelope"
+          }
+        }
+      }
+    },
+    "unknown_fields_allowed": true
+  }
+}

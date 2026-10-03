@@ -1,0 +1,223 @@
+name: SDK Conformance & Golden Vector Parity
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  # Allow manual trigger for drift investigation
+  workflow_dispatch:
+
+env:
+  GO_VERSION: '1.22'
+  NODE_VERSION: '20'
+
+jobs:
+  conformance:
+    name: Cross-SDK Golden Vector Parity
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install Python dependencies (protocol)
+        run: |
+          cd rilavo-protocol
+          uv sync --all-extras
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+
+      - name: Download Go dependencies
+        run: |
+          cd packages/rilavo-go
+          go mod download
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install TypeScript SDK dependencies
+        run: |
+          cd packages/rilavo-ts
+          npm ci
+
+      - name: Build TypeScript SDK
+        run: |
+          cd packages/rilavo-ts
+          npm run build
+
+      - name: Install Next.js SDK dependencies
+        run: |
+          cd packages/rilavo-next
+          npm ci
+
+      - name: Build Next.js SDK
+        run: |
+          cd packages/rilavo-next
+          npm run build
+
+      - name: Setup PHP for WordPress
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: sodium, mbstring, json, curl
+          tools: composer:v2
+
+      - name: Install WordPress SDK dependencies
+        run: |
+          cd packages/rilavo-wp
+          composer install --no-interaction --no-progress
+
+      - name: Run Cross-SDK Conformance Tests
+        id: conformance
+        run: |
+          python3 scripts/rilavo-conformance --sdks py ts go nextjs wp --json > conformance-report.json
+          cat conformance-report.json
+
+      - name: Check Conformance Results
+        run: |
+          python3 -c "
+import json, sys
+with open('conformance-report.json') as f:
+    report = json.load(f)
+
+failed = [r for r in report['results'] if not r['passed']]
+if failed:
+    print('::error::Conformance failures detected:')
+    for f in failed:
+        print(f"  {f['sdk']}/{f['test_category']}/{f['test_name']}: {f.get('error', 'FAIL')}")
+    sys.exit(1)
+else:
+    print('✅ All SDKs conform to golden vectors')
+    for r in report['results']:
+        if r['passed']:
+            print(f"  ✅ {r['sdk']}/{r['test_category']}/{r['test_name']}")
+"
+
+      - name: Upload Conformance Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: conformance-report
+          path: conformance-report.json
+          retention-days: 30
+
+  # Also run the standard test suites to ensure no regression
+  go-tests:
+    name: Go SDK Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/rilavo-go
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: Download dependencies
+        run: go mod download
+      - name: Vet
+        run: go vet ./...
+      - name: Run tests
+        run: go test -count=1 -race ./...
+
+  ts-tests:
+    name: TypeScript SDK Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/rilavo-ts
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Run tests
+        run: npm test
+
+  next-tests:
+    name: Next.js Middleware Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./packages/rilavo-next
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Run tests
+        run: node --test tests/middleware.test.mjs
+
+  wp-tests:
+    name: WordPress Plugin Tests (PHP ${{ matrix.php-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.1', '8.2', '8.3']
+        include:
+          - php-version: '8.1'
+            composer-flags: '--prefer-lowest'
+          - php-version: '8.2'
+            composer-flags: ''
+          - php-version: '8.3'
+            composer-flags: ''
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: sodium, mbstring, json, curl
+          ini-values: memory_limit=256M
+          coverage: xdebug
+          tools: composer:v2
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('packages/rilavo-wp/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
+      - name: Install dependencies
+        run: |
+          cd packages/rilavo-wp
+          composer install --no-interaction --no-progress ${{ matrix.composer-flags }}
+      - name: Run PHP syntax check
+        run: |
+          cd packages/rilavo-wp
+          find includes -name "*.php" -exec php -l {} \;
+      - name: Run PHPUnit tests
+        run: |
+          cd packages/rilavo-wp
+          vendor/bin/phpunit --testdox

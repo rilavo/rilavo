@@ -1,0 +1,42 @@
+{
+  "name": "@rilavo/next",
+  "version": "0.1.0",
+  "description": "Drop-in Next.js middleware for Rilavo agent credential verification",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "peerDependencies": {
+    "next": ">=13.0.0"
+  },
+  "dependencies": {
+    "@rilavo/sdk": "file:../rilavo-ts",
+    "@opentelemetry/api": "^1.4.0",
+    "@opentelemetry/resources": "^1.13.0",
+    "@opentelemetry/sdk-trace-node": "^1.13.0",
+    "@opentelemetry/sdk-metrics": "^1.13.0",
+    "@opentelemetry/exporter-prometheus": "^0.40.0",
+    "@opentelemetry/instrumentation": "^0.42.0",
+    "@opentelemetry/instrumentation-http": "^0.42.0"
+  },
+  "keywords": [
+    "rilavo",
+    "nextjs",
+    "middleware",
+    "agents"
+  ],
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^26.3.0",
+    "typescript": "^7.0.2"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --experimental-vm-modules --test tests/middleware.test.mjs"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  }
+}

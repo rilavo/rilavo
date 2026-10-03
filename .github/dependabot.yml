@@ -1,0 +1,32 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/rilavo-protocol"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "python"]
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "python"]
+  - package-ecosystem: "npm"
+    directory: "/packages/rilavo-ts"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "typescript"]
+  - package-ecosystem: "npm"
+    directory: "/packages/rilavo-next"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "typescript"]
+  - package-ecosystem: "gomod"
+    directory: "/packages/rilavo-go"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "go"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "github-actions"]

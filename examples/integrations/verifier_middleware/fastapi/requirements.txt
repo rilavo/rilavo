@@ -1,0 +1,7 @@
+rilavo
+fastapi
+uvicorn
+pydantic
+httpx
+pytest
+pytest-asyncio

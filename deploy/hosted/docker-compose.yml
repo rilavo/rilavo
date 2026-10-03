@@ -1,0 +1,15 @@
+# P-31 path 3: hosted issuance/verification.
+# The operator runs the service; customers point their SDKs at it (P-19).
+services:
+  rilavo-hosted:
+    build:
+      context: ../..
+      dockerfile: deploy/hosted/Dockerfile
+    ports:
+      - "8090:8090"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request as u; u.urlopen('http://127.0.0.1:8090/health', timeout=2)\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped

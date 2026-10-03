@@ -1,0 +1,5 @@
+{
+  "issuer_id": "rilavo:iss:ebdb3cf745390888",
+  "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAEGyDGrEac1ad0bOr7IGyTeEjM0A1jk8NUzV3OWu1t1g=\n-----END PUBLIC KEY-----\n",
+  "valid_until": 253402300800
+}

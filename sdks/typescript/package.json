@@ -1,0 +1,44 @@
+{
+  "name": "@rilavo/sdk",
+  "version": "0.1.0",
+  "description": "Rilavo SDK - verify stateless signed agent authorization credentials",
+  "main": "dist/cjs/src/index.js",
+  "types": "dist/cjs/src/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "test": "npm run build && npx tsc -p tsconfig.test.json && node --test dist/cjs/tests/index.test.js dist/cjs/tests/conformance.test.js dist/cjs/tests/smoke.test.js dist/cjs/tests/diagnostics.test.js dist/cjs/tests/doctor.test.js"
+  },
+  "license": "Apache-2.0",
+  "exports": {
+    ".": {
+      "types": "./dist/cjs/src/index.d.ts",
+      "import": "./dist/esm/src/index.js",
+      "require": "./dist/cjs/src/index.js"
+    }
+  },
+  "files": [
+    "dist/cjs/src",
+    "dist/esm/src",
+    "LICENSE",
+    "README.md"
+  ],
+  "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-metrics-otlp-grpc": "^0.52.1",
+    "@opentelemetry/exporter-prometheus": "^0.54.0",
+    "@opentelemetry/exporter-trace-otlp-grpc": "^0.52.1",
+    "@opentelemetry/instrumentation": "^0.52.1",
+    "@opentelemetry/instrumentation-http": "^0.52.1",
+    "@opentelemetry/resources": "^1.23.0",
+    "@opentelemetry/sdk-metrics": "^1.23.0",
+    "@opentelemetry/sdk-node": "^0.52.1",
+    "@opentelemetry/sdk-trace-node": "^1.23.0",
+    "@opentelemetry/semantic-conventions": "^1.23.0",
+    "@redis/client": "^1.6.0",
+    "ioredis": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/ioredis": "^4.28.10",
+    "typescript": "^7.0.2"
+  }
+}
