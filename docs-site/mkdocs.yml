@@ -1,0 +1,221 @@
+site_name: Rilavo
+site_description: Stateless, cryptographically signed agent authorization credentials — verify without a network call
+site_author: Rilavo Contributors
+site_url: https://docs.rilavo.org
+repo_url: https://github.com/rilavo/rilavo
+repo_name: rilavo/rilavo
+edit_uri: edit/main/docs-site/docs/
+copyright: Copyright &copy; 2024 Rilavo Contributors — Apache-2.0
+
+# Theme configuration
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  favicon: assets/favicon.ico
+  logo: assets/logo.svg
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/pencil
+    view: material/eye
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.share
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+    - toc.integrate
+  custom_dir: overrides
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: rilavo
+      repo: rilavo
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      base_path: docs
+      auto_append:
+        - includes/abbreviations.md
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Plugins
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-]+'
+  - minify:
+      minify_html: true
+  # - git-revision-date-localized:
+      # enable_creation_date: true
+      # type: date
+      # fallback_to_build_date: true
+  # - git-authors:
+      # enabled: true
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [../../rilavo-protocol/src]
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_toc_entry: false
+            show_signature_annotations: true
+            signature_crossrefs: true
+            docstring_style: google
+            docstring_section_style: table
+            merge_init_into_class: true
+            separate_signature: true
+            show_if_no_docstring: false
+        typescript:
+          paths: [../../packages/rilavo-ts/src]
+        # go handler not available - using placeholder
+
+# Extra CSS/JS
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  - scripts/playground.js
+  - https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js
+
+# Extra configuration
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rilavo/rilavo
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/rilavo
+  generator: false
+  alternate:
+    - name: Protocol Specification
+      link: /protocol/
+      type: text/html
+# analytics:
+#   provider: plausible
+#   domain: docs.rilavo.org
+
+# Navigation
+nav:
+  - Home: index.md
+  - License: LICENSE.md
+  - Security: SECURITY.md
+  - Getting Started:
+      - Overview: getting-started/index.md
+      - "T1: Verify Your First Credential": getting-started/T1-verify-your-first-credential.md
+      - "T2: Self-Host an Issuer": getting-started/T2-self-host-an-issuer.md
+      - "T3: SDK in a Mock Checkout": getting-started/T3-mock-checkout.md
+      - "T4: Product Metering": getting-started/T4-product-metering.md
+      - Interactive Playground: playground/index.md
+  - Protocol Reference:
+      - Mission & Scope: protocol/01-mission-and-scope.md
+      - Terminology & Semantics: protocol/02-terminology-and-semantics.md
+      - Problem & Wedge: protocol/03-problem-and-wedge.md
+      - Protocol Principles: protocol/04-protocol-principles.md
+      - Actor & Trust Model: protocol/05-actor-and-trust-model.md
+      - Credential Specification: protocol/06-credential-specification.md
+      - Authorization Model: protocol/07-authorization-model.md
+      - Revocation Specification: protocol/09-revocation-specification.md
+      - Audit Receipts: protocol/10-audit-receipts.md
+      - Cryptographic Specification: protocol/11-cryptographic-specification.md
+      - Key Management: protocol/12-key-management.md
+      - Privacy Architecture: protocol/13-privacy-architecture.md
+      - Data Model: protocol/14-data-model.md
+      - Network Architecture: protocol/15-network-architecture.md
+      - Discovery & Key Directory: protocol/17-discovery-and-key-directory.md
+      - Interoperability: protocol/18-interoperability-specification.md
+      - API Specification: protocol/19-api-specification.md
+      - SDK Specification: protocol/20-sdk-specification.md
+      - Security Threat Model: protocol/22-security-threat-model.md
+      - Security Response Model: protocol/23-security-response-model.md
+      - Versioning: protocol/26-versioning.md
+      - Self-Hosting Guide: protocol/32-self-hosting-guide.md
+      - Delegation & Attenuation: protocol/08-delegation-and-attenuation.md
+      - Compliance Products: protocol/10-compliance-products.md
+  - API Reference:
+      - Overview: api/reference.md
+      - TypeScript SDK: api/typescript/index.md
+      - Python SDK: api/python/index.md
+      - Go SDK: api/go/index.md
+      - Next.js Middleware: api/nextjs/index.md
+      - WordPress Plugin: api/wordpress/index.md
+  - Migrations:
+      - v0.0 to v0.1: migrations/v0.0_to_v0.1.md
+      - v0.1 to v0.2: migrations/v0.1_to_v0.2.md
+
+  - SDKs:
+      - Python SDK: sdks/python/index.md
+      - Go SDK: sdks/go/index.md
+      - TypeScript SDK: sdks/typescript/index.md
+      - Next.js Middleware: sdks/nextjs/index.md
+      - WordPress Plugin: sdks/wordpress/index.md
+      - SDK Parity Matrix: sdks/parity.md
+      - SDK Parity Audit: SDK_PARITY_AUDIT.md
+
+# Validation
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+
+# Build

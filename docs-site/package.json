@@ -1,0 +1,14 @@
+{
+  "name": "rilavo-docs",
+  "version": "0.1.0",
+  "description": "Rilavo documentation site",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.0.0",
+    "vue": "^3.4.0"
+  }
+}

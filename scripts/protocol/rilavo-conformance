@@ -1,0 +1,388 @@
+#!/usr/bin/env python3
+"""
+Rilavo SDK Conformance Test Runner
+Validates SDK implementations against the shared golden vectors and conformance spec.
+"""
+
+import argparse
+import json
+import subprocess
+import sys
+import time
+from pathlib import Path
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass, asdict
+from datetime import datetime
+
+
+@dataclass
+class ConformanceResult:
+    sdk: str
+    test_category: str
+    test_name: str
+    passed: bool
+    duration_ms: float
+    error: Optional[str] = None
+
+
+@dataclass
+class ConformanceReport:
+    timestamp: str
+    version: str
+    sdks_tested: List[str]
+    results: List
+    summary: Dict[str, Any]
+
+
+class ConformanceRunner:
+    SDK_DIRS = {
+        "ts": "rilavo-ts",
+        "typescript": "rilavo-ts",
+        "go": "rilavo-go",
+        "nextjs": "rilavo-next",
+        "next": "rilavo-next",
+        "wp": "rilavo-wp",
+        "wordpress": "rilavo-wp",
+        "py": "../rilavo-protocol",
+        "python": "../rilavo-protocol",
+    }
+
+    def __init__(self, root_dir: Path):
+        self.root_dir = root_dir
+        self.golden_path = root_dir / "golden" / "golden.json"
+        self.rejects_path = root_dir / "golden" / "rejects.json"
+        self.results = []
+
+    def _get_sdk_dir(self, sdk: str) -> Path:
+        dir_name = self.SDK_DIRS.get(sdk, "rilavo-" + sdk)
+        path = self.root_dir / "packages" / dir_name
+        return path.resolve()
+
+    def run_sdk_tests(self, sdk: str):
+        results = []
+        sdk_dir = self._get_sdk_dir(sdk)
+
+        if not sdk_dir.exists():
+            return [ConformanceResult(
+                sdk=sdk, test_category="setup", test_name="directory_exists",
+                passed=False, duration_ms=0, error="SDK directory not found: " + str(sdk_dir)
+            )]
+
+        if sdk in ("ts", "typescript"):
+            results.extend(self._run_ts_tests(sdk_dir))
+        elif sdk == "go":
+            results.extend(self._run_go_tests(sdk_dir))
+        elif sdk in ("nextjs", "next"):
+            results.extend(self._run_nextjs_tests(sdk_dir))
+        elif sdk in ("wp", "wordpress"):
+            results.extend(self._run_wp_tests(sdk_dir))
+        elif sdk in ("py", "python"):
+            results.extend(self._run_py_tests(sdk_dir))
+        else:
+            results.append(ConformanceResult(
+                sdk=sdk, test_category="setup", test_name="unknown_sdk",
+                passed=False, duration_ms=0, error="Unknown SDK: " + sdk
+            ))
+
+        return results
+
+    def _run_ts_tests(self, sdk_dir):
+        results = []
+        package_json = sdk_dir / "package.json"
+        if not package_json.exists():
+            return [ConformanceResult(
+                sdk="ts", test_category="setup", test_name="package_json",
+                passed=False, duration_ms=0, error="package.json not found"
+            )]
+
+        # Run conformance test specifically
+        start = time.time()
+        result = subprocess.run(
+            ["npx", "tsc", "-p", "tsconfig.test.json", "&&", "node", "--test", "dist/cjs/tests/conformance.test.js"],
+            cwd=sdk_dir,
+            capture_output=True,
+            text=True,
+            timeout=120,
+            shell=True
+        )
+        duration_ms = (time.time() - start) * 1000
+
+        passed = result.returncode == 0
+        self.results.append(ConformanceResult(
+            sdk="ts", test_category="unit", test_name="conformance_test",
+            passed=passed, duration_ms=duration_ms,
+            error=result.stderr if not passed and "Error:" in result.stderr else None
+        ))
+
+        golden_test = list(Path(sdk_dir).rglob("*conformance*.test.ts"))
+        if golden_test:
+            self.results.append(ConformanceResult(
+                sdk="ts", test_category="golden_vectors", test_name="golden_vector_tests_exist",
+                passed=True, duration_ms=0
+            ))
+        else:
+            self.results.append(ConformanceResult(
+                sdk="ts", test_category="golden_vectors", test_name="golden_vector_tests_exist",
+                passed=False, duration_ms=0, error="No conformance test file found"
+            ))
+
+        return results
+
+    def _run_go_tests(self, sdk_dir):
+        results = []
+        go_mod = sdk_dir / "go.mod"
+        if not go_mod.exists():
+            return [ConformanceResult(
+                sdk="go", test_category="setup", test_name="go_mod",
+                passed=False, duration_ms=0, error="go.mod not found"
+            )]
+
+        start = time.time()
+        result = subprocess.run(
+            ["go", "test", "-v", "./..."],
+            cwd=sdk_dir,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        duration_ms = (time.time() - start) * 1000
+
+        passed = result.returncode == 0
+        self.results.append(ConformanceResult(
+            sdk="go", test_category="unit", test_name="go_test",
+            passed=passed, duration_ms=duration_ms,
+            error=result.stderr if not passed and "Error:" in result.stderr else None
+        ))
+
+        golden_test = list(Path(sdk_dir).rglob("*golden*test.go"))
+        if golden_test:
+            self.results.append(ConformanceResult(
+                sdk="go", test_category="golden_vectors", test_name="golden_vector_tests_exist",
+                passed=True, duration_ms=0
+            ))
+        else:
+            self.results.append(ConformanceResult(
+                sdk="go", test_category="golden_vectors", test_name="golden_vector_tests_exist",
+                passed=False, duration_ms=0, error="No golden vector test file found"
+            ))
+
+        return results
+
+    def _run_nextjs_tests(self, sdk_dir):
+        results = []
+        package_json = sdk_dir / "package.json"
+        if not package_json.exists():
+            return [ConformanceResult(
+                sdk="nextjs", test_category="setup", test_name="package_json",
+                passed=False, duration_ms=0, error="package.json not found"
+            )]
+
+        start = time.time()
+        result = subprocess.run(
+            ["npm", "test"],
+            cwd=sdk_dir,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        duration_ms = (time.time() - start) * 1000
+
+        passed = result.returncode == 0
+        self.results.append(ConformanceResult(
+            sdk="nextjs", test_category="unit", test_name="npm_test",
+            passed=passed, duration_ms=duration_ms,
+            error=result.stderr if not passed else None
+        ))
+
+        return results
+
+    def _run_wp_tests(self, sdk_dir):
+        results = []
+        wp_dir = self.root_dir / "packages" / "rilavo-wp"
+        composer_json = wp_dir / "composer.json"
+        if not composer_json.exists():
+            return [ConformanceResult(
+                sdk="wp", test_category="setup", test_name="composer_json",
+                passed=False, duration_ms=0, error="composer.json not found"
+            )]
+
+        start = time.time()
+        result = subprocess.run(
+            ["composer", "install", "--no-interaction", "--no-progress"],
+            cwd=wp_dir,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        duration_ms = (time.time() - start) * 1000
+
+        if result.returncode != 0:
+            self.results.append(ConformanceResult(
+                sdk="wp", test_category="setup", test_name="composer_install",
+                passed=False, duration_ms=duration_ms, error=result.stderr
+            ))
+            return results
+
+        start = time.time()
+        result = subprocess.run(
+            ["vendor/bin/phpunit", "--testdox"],
+            cwd=wp_dir,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        duration_ms = (time.time() - start) * 1000
+
+        passed = result.returncode == 0
+        self.results.append(ConformanceResult(
+            sdk="wp", test_category="unit", test_name="phpunit",
+            passed=passed, duration_ms=duration_ms,
+            error=result.stderr if not passed else None
+        ))
+
+        return results
+
+    def _run_py_tests(self, sdk_dir):
+        results = []
+        pyproject = sdk_dir / "pyproject.toml"
+        if not pyproject.exists():
+            return [ConformanceResult(
+                sdk="py", test_category="setup", test_name="pyproject_toml",
+                passed=False, duration_ms=0, error="pyproject.toml not found"
+            )]
+
+        start = time.time()
+        result = subprocess.run(
+            ["uv", "run", "pytest", "-q"],
+            cwd=sdk_dir,
+            capture_output=True,
+            text=True,
+            timeout=180
+        )
+        duration_ms = (time.time() - start) * 1000
+
+        passed = result.returncode == 0
+        self.results.append(ConformanceResult(
+            sdk="py", test_category="unit", test_name="pytest",
+            passed=passed, duration_ms=duration_ms,
+            error=result.stderr if not passed else None
+        ))
+
+        return results
+
+    def run_all(self, sdks):
+        all_results = []
+
+        for sdk in sdks:
+            print("Running conformance tests for " + sdk + "...")
+            results = self.run_sdk_tests(sdk)
+            self.results.extend(results)
+            all_results.extend(results)
+
+        summary = self._generate_summary()
+
+        return ConformanceReport(
+            timestamp=datetime.utcnow().isoformat() + "Z",
+            version="0.1.0",
+            sdks_tested=list(set(r.sdk for r in all_results)),
+            results=all_results,
+            summary=summary
+        )
+
+    def _generate_summary(self):
+        total = len(self.results)
+        passed = sum(1 for r in self.results if r.passed)
+        failed = total - passed
+
+        by_sdk = {}
+        by_category = {}
+
+        for r in self.results:
+            by_sdk[r.sdk] = by_sdk.get(r.sdk, 0) + 1
+            by_category[r.test_category] = by_category.get(r.test_category, 0) + 1
+
+        return {
+            "total": total,
+            "passed": passed,
+            "failed": failed,
+            "pass_rate": passed / total if total > 0 else 0,
+            "by_sdk": by_sdk,
+            "by_category": by_category,
+            "failed_tests": [
+                {"sdk": r.sdk, "category": r.test_category, "name": r.test_name, "error": r.error}
+                for r in self.results if not r.passed
+            ]
+        }
+
+    def save_report(self, report, output_path):
+        def convert(obj):
+            if isinstance(obj, (ConformanceReport, ConformanceResult)):
+                return asdict(obj)
+            return obj
+
+        with open(output_path, "w") as f:
+            json.dump(convert(report), f, indent=2, default=str)
+
+        print("Report saved to " + str(output_path))
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Rilavo SDK Conformance Test Runner")
+    parser.add_argument("--sdks", nargs="+", default=["ts", "go", "nextjs", "wp", "py"],
+                       help="SDKs to test (ts, go, nextjs, wp, py)")
+    parser.add_argument("--output", "-o", default="conformance-report.json",
+                       help="Output file for conformance report")
+    parser.add_argument("--root", "-r", default=".",
+                       help="Root directory of Rilavo repo")
+    parser.add_argument("--json", action="store_true",
+                       help="Output JSON to stdout")
+
+    args = parser.parse_args()
+
+    # Handle comma-separated SDKs
+    sdks = args.sdks
+    if len(sdks) == 1 and ',' in sdks[0]:
+        sdks = [s.strip() for s in sdks[0].split(',')]
+
+    root_dir = Path(args.root).resolve()
+    runner = ConformanceRunner(root_dir)
+
+    print("Running conformance tests for SDKs: " + str(sdks))
+    print("Root directory: " + str(root_dir))
+
+    report = runner.run_all(sdks)
+
+    if args.json:
+        print(json.dumps(asdict(report), indent=2, default=str))
+    else:
+        summary = report.summary
+        print("\n=== Conformance Test Summary ===")
+        print("Total tests: " + str(summary["total"]))
+        print("Passed: " + str(summary["passed"]))
+        print("Failed: " + str(summary["failed"]))
+        print("Pass rate: {:.1%}".format(summary["pass_rate"]))
+
+        print("\nBy SDK:")
+        for sdk, count in summary["by_sdk"].items():
+            print("  " + sdk + ": " + str(count) + " tests")
+
+        print("\nBy Category:")
+        for cat, count in summary["by_category"].items():
+            print("  " + cat + ": " + str(count) + " tests")
+
+        if summary["failed_tests"]:
+            print("\nFailed tests:")
+            for ft in summary["failed_tests"]:
+                print("  [" + ft["sdk"] + "] " + ft["category"] + "/" + ft["name"] + ": " + str(ft["error"]))
+
+        runner.save_report(report, Path(args.output))
+        print("\nFull report saved to " + args.output)
+
+    sys.exit(0 if report.summary["failed"] == 0 else 1)
+
+
+if __name__ == "__main__":
+    import argparse
+    import time
+    from typing import Optional
+    main()

@@ -1,0 +1,27 @@
+# Build output
+site/
+*.log
+
+# Generated API references (re-generated on build)
+docs/api/python/*.md
+!docs/api/python/index.md
+docs/api/typescript/*.md
+!docs/api/typescript/index.md
+docs/api/go/*.md
+!docs/api/go/index.md
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Node modules
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

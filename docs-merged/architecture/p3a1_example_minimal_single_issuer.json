@@ -1,9 +1,0 @@
-{
-  "rilavo_discovery_version": 1,
-  "entries": [
-    {
-      "issuer_id": "rilavo:iss:56475aa75463474c",
-      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA\n-----END PUBLIC KEY-----\n"
-    }
-  ]
-}

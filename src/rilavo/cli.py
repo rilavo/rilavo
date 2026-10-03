@@ -37,7 +37,8 @@ def main(argv: list[str] | None = None) -> int:
     p_issue.set_defaults(func=cmd_issue)
 
     # conformance
-    p_conformance = sub.add_parser("conformance", help="run local conformance self-check")
+    p_conformance = sub.add_parser("conformance", help="mechanical self-check against a target")
+    p_conformance.add_argument("--target", required=True, help="'local' or an http(s) base URL of a running issuer")
     p_conformance.add_argument("--json", action="store_true", help="output as JSON")
     p_conformance.set_defaults(func=cmd_conformance)
 
@@ -156,27 +157,13 @@ def cmd_issue(args):
 
 
 def cmd_conformance(args):
-    """Run cross-SDK conformance check."""
-    from .conformance_cli import run_local_checks, render_report
-    import json
-    report = run_local_checks()
+    """Mechanical self-check against a target."""
+    from .conformance_cli import main as conformance_main
+    import sys
+    sys.argv = ["conformance", "--target", args.target]
     if args.json:
-        # Convert report to dict for JSON output
-        result = {
-            "target": report.target,
-            "results": [
-                {"check_id": r.check_id, "title": r.title, "passed": r.passed, "detail": r.detail}
-                for r in report.results
-            ],
-            "summary": {
-                "passed": sum(1 for r in report.results if r.passed is True),
-                "failed": sum(1 for r in report.results if r.passed is False),
-                "skipped": sum(1 for r in report.results if r.passed is None),
-            }
-        }
-        print(json.dumps(result, indent=2))
-    else:
-        print(render_report(report))
+        sys.argv.append("--json")
+    conformance_main()
 
 
 def cmd_explain(args):
@@ -323,21 +310,20 @@ def cmd_service(args):
                     except json.JSONDecodeError:
                         return 400, {"Content-Type": "application/json"}, {"error": "Invalid JSON"}
 
-                    # Extract parameters
+                    # Extract parameters (accept both agent_public_key and agent_pub for compatibility)
                     principal = data.get("principal")
                     agent = data.get("agent")
-                    agent_pub = data.get("agent_pub")
+                    agent_pub_b64 = data.get("agent_public_key") or data.get("agent_pub")
                     action_class = data.get("action_class")
                     audience = data.get("audience")
                     ttl_seconds = data.get("ttl_seconds")
                     context = data.get("context")
 
-                    if not all([principal, agent, agent_pub, action_class, audience]):
-                        return 400, {"Content-Type": "application/json"}, {"error": "Missing required fields: principal, agent, agent_pub, action_class, audience"}
+                    if not all([principal, agent, agent_pub_b64, action_class, audience]):
+                        return 400, {"Content-Type": "application/json"}, {"error": "Missing required fields: principal, agent, agent_public_key (or agent_pub), action_class, audience"}
 
                     try:
                         # Parse agent public key from base64url
-                        agent_pub_b64 = data.get("agent_pub", "")
                         agent_pub_bytes = b64url_decode(agent_pub_b64)
                         agent_pub = Ed25519PublicKey.from_public_bytes(agent_pub_bytes)
 

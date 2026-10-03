@@ -1,0 +1,123 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs-site/**'
+      - 'docs/**'
+      - 'rilavo-protocol/src/rilavo/**'
+      - 'packages/rilavo-ts/src/**'
+      - 'packages/rilavo-go/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install MkDocs dependencies
+        run: |
+          cd docs-site
+          pip install -q mkdocs-material mkdocstrings[python] mkdocs-minify-plugin             mkdocs-git-revision-date-localized-plugin mkdocs-git-authors-plugin             mkdocs-mermaid2-plugin
+
+      - name: Generate Python API reference
+        run: |
+          cd docs-site
+          python scripts/gen_python_api.py
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: packages/rilavo-ts/package-lock.json
+
+      - name: Install TypeScript dependencies
+        run: |
+          cd packages/rilavo-ts
+          npm ci --quiet
+
+      - name: Generate TypeScript API reference
+        run: |
+          cd docs-site
+          python scripts/gen_ts_api.py
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          cache: true
+
+      - name: Install gomarkdoc
+        run: |
+          go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
+
+      - name: Generate Go API reference
+        run: |
+          cd docs-site
+          python scripts/gen_go_api.py
+
+      - name: Build MkDocs site
+        run: |
+          cd docs-site
+          mkdocs build --verbose
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs-site/site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Validate links in generated site
+  link-check:
+    name: Link Check
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: site
+
+      - name: Check links
+        uses: lycheeverse/lychee-action@v1
+        with:
+          args: --verbose --no-progress './site/**/*.html'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

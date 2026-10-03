@@ -366,6 +366,7 @@ def main(argv=None) -> int:
                                  description=__doc__.splitlines()[0])
     ap.add_argument("--target", required=True,
                     help="'local' or an http(s) base URL of a running issuer")
+    ap.add_argument("--json", action="store_true", help="output as JSON")
     args = ap.parse_args(argv)
 
     if args.target == "local":
@@ -376,7 +377,23 @@ def main(argv=None) -> int:
         print("--target must be 'local' or an http(s) URL", file=sys.stderr)
         return 2
 
-    print(render_report(report))
+    if args.json:
+        import json
+        result = {
+            "target": report.target,
+            "results": [
+                {"check_id": r.check_id, "title": r.title, "passed": r.passed, "detail": r.detail}
+                for r in report.results
+            ],
+            "summary": {
+                "passed": sum(1 for r in report.results if r.passed is True),
+                "failed": sum(1 for r in report.results if r.passed is False),
+                "skipped": sum(1 for r in report.results if r.passed is None),
+            }
+        }
+        print(json.dumps(result, indent=2))
+    else:
+        print(render_report(report))
     return report.exit_code()
 
 

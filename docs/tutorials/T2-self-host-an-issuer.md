@@ -1,5 +1,8 @@
 # T2 — Self-host an issuer (the P-32 checklist, walked literally)
 
+> **Try it first:** [Interactive Playground](../playground/index.md) — issue and verify credentials in your browser without setting up infrastructure.
+
+
 **What you'll do:** run your own credential issuance server under your own
 key. ~10 minutes.
 **What you need:** the `rilavo-protocol/` repo. Nothing else — that is the
