@@ -47,3 +47,6 @@ tmp/
 rilavo-env/
 .gitignore
 sdks/wordpress/vendor/
+
+# Dependencies
+node_modules/
