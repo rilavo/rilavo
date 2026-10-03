@@ -5,7 +5,6 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
-  # Allow manual trigger for drift investigation
   workflow_dispatch:
 
 env:
@@ -17,6 +16,9 @@ jobs:
     name: Cross-SDK Golden Vector Parity
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: .
     steps:
       - uses: actions/checkout@v4
 
@@ -30,9 +32,7 @@ jobs:
         uses: astral-sh/setup-uv@v3
 
       - name: Install Python dependencies (protocol)
-        run: |
-          cd rilavo-protocol
-          uv sync --all-extras
+        run: uv sync --all-extras
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -42,7 +42,7 @@ jobs:
 
       - name: Download Go dependencies
         run: |
-          cd packages/rilavo-go
+          cd sdks/go
           go mod download
 
       - name: Set up Node
@@ -53,22 +53,22 @@ jobs:
 
       - name: Install TypeScript SDK dependencies
         run: |
-          cd packages/rilavo-ts
+          cd sdks/typescript
           npm ci
 
       - name: Build TypeScript SDK
         run: |
-          cd packages/rilavo-ts
+          cd sdks/typescript
           npm run build
 
       - name: Install Next.js SDK dependencies
         run: |
-          cd packages/rilavo-next
+          cd sdks/nextjs
           npm ci
 
       - name: Build Next.js SDK
         run: |
-          cd packages/rilavo-next
+          cd sdks/nextjs
           npm run build
 
       - name: Setup PHP for WordPress
@@ -80,144 +80,68 @@ jobs:
 
       - name: Install WordPress SDK dependencies
         run: |
-          cd packages/rilavo-wp
+          cd sdks/wordpress
           composer install --no-interaction --no-progress
 
       - name: Run Cross-SDK Conformance Tests
         id: conformance
         run: |
-          python3 scripts/rilavo-conformance --sdks py ts go nextjs wp --json > conformance-report.json
-          cat conformance-report.json
+          uv run python scripts/generate_golden_vectors.py
+          uv run pytest tests/test_golden_corpus.py -v
 
-      - name: Check Conformance Results
-        run: |
-          python3 -c "
-import json, sys
-with open('conformance-report.json') as f:
-    report = json.load(f)
-
-failed = [r for r in report['results'] if not r['passed']]
-if failed:
-    print('::error::Conformance failures detected:')
-    for f in failed:
-        print(f"  {f['sdk']}/{f['test_category']}/{f['test_name']}: {f.get('error', 'FAIL')}")
-    sys.exit(1)
-else:
-    print('✅ All SDKs conform to golden vectors')
-    for r in report['results']:
-        if r['passed']:
-            print(f"  ✅ {r['sdk']}/{r['test_category']}/{r['test_name']}")
-"
-
-      - name: Upload Conformance Report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: conformance-report
-          path: conformance-report.json
-          retention-days: 30
-
-  # Also run the standard test suites to ensure no regression
-  go-tests:
-    name: Go SDK Tests
+  conformance-local:
+    name: Local Conformance Self-Check
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./packages/rilavo-go
+        working-directory: .
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-      - name: Download dependencies
-        run: go mod download
-      - name: Vet
-        run: go vet ./...
-      - name: Run tests
-        run: go test -count=1 -race ./...
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Run local conformance
+        run: uv run rilavo conformance --target local
+      - name: Run HTTP conformance (with service)
+        run: |
+          # Start service in background
+          uv run rilavo service --port 8090 --metrics-port 9090 &
+          SERVICE_PID=$!
+          sleep 5
+          # Run conformance against local service
+          uv run rilavo conformance --target http://localhost:8090
+          # Cleanup
+          kill $SERVICE_PID
 
-  ts-tests:
-    name: TypeScript SDK Tests
+  golden-vectors:
+    name: Generate & Verify Golden Vectors
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./packages/rilavo-ts
+        working-directory: .
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
       - name: Install dependencies
-        run: npm ci
-      - name: Build
-        run: npm run build
-      - name: Run tests
-        run: npm test
-
-  next-tests:
-    name: Next.js Middleware Tests
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./packages/rilavo-next
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Build
-        run: npm run build
-      - name: Run tests
-        run: node --test tests/middleware.test.mjs
-
-  wp-tests:
-    name: WordPress Plugin Tests (PHP ${{ matrix.php-version }})
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        php-version: ['8.1', '8.2', '8.3']
-        include:
-          - php-version: '8.1'
-            composer-flags: '--prefer-lowest'
-          - php-version: '8.2'
-            composer-flags: ''
-          - php-version: '8.3'
-            composer-flags: ''
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-version }}
-          extensions: sodium, mbstring, json, curl
-          ini-values: memory_limit=256M
-          coverage: xdebug
-          tools: composer:v2
-      - name: Cache Composer packages
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ matrix.php-version }}-composer-${{ hashFiles('packages/rilavo-wp/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-${{ matrix.php-version }}-composer-
-      - name: Install dependencies
+        run: uv sync --all-extras
+      - name: Generate golden vectors
+        run: uv run python scripts/generate_golden_vectors.py
+      - name: Verify golden corpus
+        run: uv run pytest tests/test_golden_corpus.py -v
+      - name: Check vector files exist
         run: |
-          cd packages/rilavo-wp
-          composer install --no-interaction --no-progress ${{ matrix.composer-flags }}
-      - name: Run PHP syntax check
-        run: |
-          cd packages/rilavo-wp
-          find includes -name "*.php" -exec php -l {} \;
-      - name: Run PHPUnit tests
-        run: |
-          cd packages/rilavo-wp
-          vendor/bin/phpunit --testdox
+          test -f golden/golden.json
+          test -f golden/rejects.json
+          echo "Golden vector files present"

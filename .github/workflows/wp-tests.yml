@@ -4,12 +4,12 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - 'packages/rilavo-wp/**'
+      - 'sdks/wordpress/**'
       - '.github/workflows/wp-tests.yml'
   pull_request:
     branches: [main, develop]
     paths:
-      - 'packages/rilavo-wp/**'
+      - 'sdks/wordpress/**'
       - '.github/workflows/wp-tests.yml'
 
 jobs:
@@ -20,6 +20,10 @@ jobs:
       matrix:
         php-version: ['8.1', '8.2', '8.3']
       fail-fast: false
+
+    defaults:
+      run:
+        working-directory: ./sdks/wordpress
 
     steps:
       - name: Checkout code
@@ -34,23 +38,24 @@ jobs:
 
       - name: Validate composer.json
         run: composer validate --strict
-        working-directory: ./packages/rilavo-wp
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
-        working-directory: ./packages/rilavo-wp
 
       - name: Run PHPUnit tests
         run: vendor/bin/phpunit --testdox
-        working-directory: ./packages/rilavo-wp
 
       - name: Check PHP syntax
-        run: find . -name "*.php" -exec php -l {} \; | grep -v "No syntax errors"
-        working-directory: ./packages/rilavo-wp
+        run: |
+          find . -name "*.php" -exec php -l {} \; | grep -v "No syntax errors"
 
   wp-lint:
     name: WordPress Code Style
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./sdks/wordpress
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -64,14 +69,12 @@ jobs:
 
       - name: Install PHP_CodeSniffer
         run: composer global require "squizlabs/php_codesniffer=*"
-        working-directory: ./packages/rilavo-wp
 
       - name: Install WordPress Coding Standards
         run: |
           composer global require "wp-coding-standards/wpcs=*"
           phpcs --config-set installed_paths ~/.composer/vendor/wp-coding-standards/wpcs
-        working-directory: ./packages/rilavo-wp
 
-      - name: Run PHP_CodeSniffer
-        run: ~/.composer/vendor/bin/phpcs --standard=WordPress src/
-        working-directory: ./packages/rilavo-wp
+      - name: Run PHPCS
+        run: |
+          phpcs --standard=WordPress --extensions=php .
