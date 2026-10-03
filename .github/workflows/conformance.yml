@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: ./
+        working-directory: ./rilavo/
     steps:
       - uses: actions/checkout@v4
 
@@ -104,7 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./
+        working-directory: ./rilavo/
     steps:
       - uses: actions/checkout@v4
       - name: Debug workspace
@@ -140,7 +140,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./
+        working-directory: ./rilavo/
     steps:
       - uses: actions/checkout@v4
       - name: Debug workspace
