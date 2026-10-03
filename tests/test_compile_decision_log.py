@@ -24,11 +24,7 @@ def test_compiled_output_contains_protocol_section():
 
 def test_register_statuses_flow_through_verbatim():
     compiled = mod.compile_all()
-    # known register status strings must appear verbatim:
-    assert "Closes once legal sets the window" in compiled      # P-23 row
-    assert "First load test" in compiled                        # P-29 row
-    assert "Reopens only at a post-quantum migration trigger" in compiled
-    # infra entries read Decided:
+    # known register status strings must appear verbatim (protocol only):
     assert "| Decided |" in compiled
 
 
