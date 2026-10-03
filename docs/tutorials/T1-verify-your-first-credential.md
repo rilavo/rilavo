@@ -20,10 +20,12 @@ the SDK's published fixed test issuer as a stand-in:
 from rilavo.testing import offline_test_kit
 kit = offline_test_kit()
 print(kit.issuer.issuer_id)
-# -> rilavo:iss:38f93d4f0edb4f65   (stable across runs — it's a fixed keypair)
+# -> rilavo:iss:38f93d4f0edb4f65   (stable across runs -- it's a fixed keypair)
+```
 
-> **Try it first:** [Interactive Playground](../playground/index.md) — issue and verify credentials in your browser.
+> **Try it first:** [Interactive Playground](../playground/index.md) -- issue and verify credentials in your browser.
 
+```python
 print(kit.verifier_id)
 # -> verifier:test.rilavo.example
 ```

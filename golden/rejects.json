@@ -4,13 +4,13 @@
       "iss": "rilavo:iss:goldencorpus",
       "sub": "did:example:alice",
       "agt": "did:example:alice-bot",
-      "apk": "Eo1qpPQ4HTpb6ULWtKr3jQ9s6Y05PS0YN7ZFgqwNDr8",
+      "apk": "3eO8zsfzpmoRFfRdcg9NwTXDrnxOItyjj9se_WpJX_g",
       "act": "data.read",
       "aud": "svc:corpus",
       "iat": 1700000000,
       "exp": 1700014400,
-      "nonce": "f7-lJTpm-Tvh8KUgeROwIQ",
-      "sig": "HiUpojutTBW-V-LKVnJbL8qcMu_cffFvndalJ0b7G4NZwq21IegqxN-XQsrtAwxJSnE6TAWxjvc1v_rathg8Ag",
+      "nonce": "wlZK1KYdsvql5RghoSRrxw",
+      "sig": "-yYGIqgJ0BWNj2CrbgguBbdfSzFzxIu5KKjd-LYKa_stGuH24TuorNUcP1B5PqMlaJ0LcE5r8ACW4nUd9vuWBg",
       "ver": 9
     },
     "expected_reason": "unrecognized_version"
@@ -20,13 +20,13 @@
       "iss": "rilavo:iss:goldencorpus",
       "sub": "did:example:alice",
       "agt": "did:example:alice-bot",
-      "apk": "Eo1qpPQ4HTpb6ULWtKr3jQ9s6Y05PS0YN7ZFgqwNDr8",
+      "apk": "3eO8zsfzpmoRFfRdcg9NwTXDrnxOItyjj9se_WpJX_g",
       "act": "data.read",
       "aud": "svc:other",
       "iat": 1700000000,
       "exp": 1700014400,
-      "nonce": "f7-lJTpm-Tvh8KUgeROwIQ",
-      "sig": "HiUpojutTBW-V-LKVnJbL8qcMu_cffFvndalJ0b7G4NZwq21IegqxN-XQsrtAwxJSnE6TAWxjvc1v_rathg8Ag"
+      "nonce": "wlZK1KYdsvql5RghoSRrxw",
+      "sig": "-yYGIqgJ0BWNj2CrbgguBbdfSzFzxIu5KKjd-LYKa_stGuH24TuorNUcP1B5PqMlaJ0LcE5r8ACW4nUd9vuWBg"
     },
     "expected_reason": "audience_mismatch"
   },
@@ -35,13 +35,13 @@
       "iss": "rilavo:iss:goldencorpus",
       "sub": "did:example:alice",
       "agt": "did:example:alice-bot",
-      "apk": "Eo1qpPQ4HTpb6ULWtKr3jQ9s6Y05PS0YN7ZFgqwNDr8",
+      "apk": "3eO8zsfzpmoRFfRdcg9NwTXDrnxOItyjj9se_WpJX_g",
       "act": "data.read",
       "aud": "svc:corpus",
       "iat": 1700000000,
       "exp": 1000000000,
-      "nonce": "f7-lJTpm-Tvh8KUgeROwIQ",
-      "sig": "HiUpojutTBW-V-LKVnJbL8qcMu_cffFvndalJ0b7G4NZwq21IegqxN-XQsrtAwxJSnE6TAWxjvc1v_rathg8Ag"
+      "nonce": "wlZK1KYdsvql5RghoSRrxw",
+      "sig": "-yYGIqgJ0BWNj2CrbgguBbdfSzFzxIu5KKjd-LYKa_stGuH24TuorNUcP1B5PqMlaJ0LcE5r8ACW4nUd9vuWBg"
     },
     "expected_reason": "expired"
   }

@@ -21,23 +21,23 @@
     "nonce": "corpus-nonce",
     "payload_hex": "7b2272696c61766f5f706f705f7630223a2236646237333432336537333761663333326134613434366239653438303232643666656538326633653330313364333735376233333937356634353666653739227d"
   },
-  "issuer_pub_b64url": "U3cfFbZsRRnm-SyUwxSJTHhJ-pKiI6VRx96_y_KPndI",
-  "agent_pub_b64url": "l2MHdhaH5fDj1gSYAXVEExUfzRh-5owXIhrh4Ayz0x0",
+  "issuer_pub_b64url": "T9CZzNR9eJPf6ewkQU7LDZtUICMqrTDZHEZb4zy-ZcQ",
+  "agent_pub_b64url": "3eO8zsfzpmoRFfRdcg9NwTXDrnxOItyjj9se_WpJX_g",
   "pop_sig": {
-    "sig_b64url": "Ccr5jULbdfzu_YRNxV6IUN_LAYyrmeHQPnuvWNhQUbnEktCiV9xk15YWiNDTcVbheHUjyIZOi5Dh3x4HyV87Bw",
+    "sig_b64url": "LdGw6f0kFlgH080pBjhysrh9GH49yNah-aUKnKsX5wSXTQTab97jmPal0Lx9rGP_mZkT2d3uy5G90NQ0oobCDg",
     "nonce": "corpus-nonce"
   },
   "credential_fields": {
     "iss": "rilavo:iss:goldencorpus",
     "sub": "did:example:alice",
     "agt": "did:example:alice-bot",
-    "apk": "l2MHdhaH5fDj1gSYAXVEExUfzRh-5owXIhrh4Ayz0x0",
+    "apk": "3eO8zsfzpmoRFfRdcg9NwTXDrnxOItyjj9se_WpJX_g",
     "act": "data.read",
     "aud": "svc:corpus",
     "iat": 1700000000,
     "exp": 1700014400,
-    "nonce": "HsiizDgoYr3EiD4DR-MywQ",
-    "sig": "3i757Cchx3tVAlzEdLPuaTDLu-sUX7rUsQnYowHIRzgTQBd_r_144CHJjg0NAqCcaEfjcJrMqiUbzlV_173WCg"
+    "nonce": "wlZK1KYdsvql5RghoSRrxw",
+    "sig": "-yYGIqgJ0BWNj2CrbgguBbdfSzFzxIu5KKjd-LYKa_stGuH24TuorNUcP1B5PqMlaJ0LcE5r8ACW4nUd9vuWBg"
   },
-  "credential_sig_b64url": "3i757Cchx3tVAlzEdLPuaTDLu-sUX7rUsQnYowHIRzgTQBd_r_144CHJjg0NAqCcaEfjcJrMqiUbzlV_173WCg"
+  "credential_sig_b64url": "-yYGIqgJ0BWNj2CrbgguBbdfSzFzxIu5KKjd-LYKa_stGuH24TuorNUcP1B5PqMlaJ0LcE5r8ACW4nUd9vuWBg"
 }

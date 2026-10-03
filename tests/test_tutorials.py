@@ -17,7 +17,7 @@ import urllib.request
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-TUT = REPO.parents[0] / "docs" / "tutorials"
+TUT = REPO / "docs" / "tutorials"
 PY = sys.executable
 
 
@@ -46,7 +46,7 @@ def _wait(url: str, timeout: float = 15.0):
 def test_tutorials_exist():
     for name in ("index.md", "T1-verify-your-first-credential.md",
                  "T2-self-host-an-issuer.md", "T3-mock-checkout.md",
-                 "T4-enterprise-metering.md"):
+                 "T4-production-deployment.md"):
         assert (TUT / name).exists(), f"missing tutorial {name}"
 
 
