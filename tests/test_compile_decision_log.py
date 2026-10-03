@@ -16,10 +16,10 @@ sys.modules["compile_decision_log"] = mod
 spec.loader.exec_module(mod)
 
 
-def test_compiled_output_contains_both_repo_sections():
+def test_compiled_output_contains_protocol_section():
     compiled = mod.compile_all()
     assert "rilavo-protocol (protocol decisions)" in compiled
-    assert "rilavo-enterprise (commercial-layer decisions)" in compiled
+    # Enterprise section not included in public release
 
 
 def test_register_statuses_flow_through_verbatim():

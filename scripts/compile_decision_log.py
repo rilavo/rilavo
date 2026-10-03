@@ -64,9 +64,7 @@ def compile_all() -> dict:
     n = 0
     for label, log_path in (
             ("rilavo-protocol (protocol decisions)",
-             REPO / "DECISION_LOG.md"),
-            ("rilavo-enterprise (commercial-layer decisions)",
-             ROOT / "rilavo-enterprise" / "DECISION_LOG.md")):
+             REPO / "DECISION_LOG.md"),):
         rows = parse_log(log_path)
         section_rows = []
         for row in rows:
