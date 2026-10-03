@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: .
+        working-directory: ./rilavo
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./sdks/go
+        working-directory: ./rilavo/sdks/go
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./sdks/typescript
+        working-directory: ./rilavo/sdks/typescript
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node
@@ -93,7 +93,7 @@ jobs:
     needs: ts-tests
     defaults:
       run:
-        working-directory: ./sdks/nextjs
+        working-directory: ./rilavo/sdks/nextjs
     steps:
       - uses: actions/checkout@v4
       - name: Set up Node
@@ -129,7 +129,7 @@ jobs:
       fail-fast: false
     defaults:
       run:
-        working-directory: ./sdks/wordpress
+        working-directory: ./rilavo/sdks/wordpress
     steps:
       - uses: actions/checkout@v4
       - name: Setup PHP
