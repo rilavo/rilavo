@@ -58,14 +58,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: sdks/typescript/package-lock.json
 
-      - name: Install TypeScript SDK dependencies
+      - name: Install and Build TypeScript SDK
         run: |
           cd sdks/typescript
           npm ci
-
-      - name: Build TypeScript SDK
-        run: |
-          cd sdks/typescript
           npm run build
 
       - name: Set up Node for Next.js
