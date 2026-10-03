@@ -76,7 +76,9 @@ class GoldenVectorTest extends TestCase
             "-----BEGIN PUBLIC KEY-----
 " . chunk_split($this->pemFromRaw($v['issuer_pub_b64url']), 64, "
 ") . "-----END PUBLIC KEY-----
-"
+",
+            null,
+            fn() => 1700000001 // Fixed time: iat + 1
         );
 
         $result = $verifier->verifyFields(
@@ -97,7 +99,12 @@ class GoldenVectorTest extends TestCase
         $fields = $this->golden['credential_fields'];
         unset($fields['ver']);
 
-        $verifier = new \Rilavo\RilavoVerifier($fields['aud'], $this->makeIssuerPem());
+        $verifier = new \Rilavo\RilavoVerifier(
+            $fields['aud'],
+            $this->makeIssuerPem(),
+            null,
+            fn() => 1700000001 // Fixed time: iat + 1
+        );
         $result = $verifier->verifyFields($fields, 'GET', '/data/1', 'data.read', 
             $this->golden['pop_sig']['sig_b64url'], $this->golden['pop_sig']['nonce']);
 
@@ -158,9 +165,15 @@ class GoldenVectorTest extends TestCase
     public function testNotYetValidCredential(): void
     {
         $fields = $this->golden['credential_fields'];
-        $fields['iat'] = time() + 3600;
+        $fields['iat'] = 1700000002; // iat + 2 (future)
+        $fields['exp'] = 1700003600; // exp in future
 
-        $verifier = new \Rilavo\RilavoVerifier($this->golden['credential_fields']['aud'], $this->makeIssuerPem());
+        $verifier = new \Rilavo\RilavoVerifier(
+            $this->golden['credential_fields']['aud'],
+            $this->makeIssuerPem(),
+            null,
+            fn() => 1700000001 // Fixed time: iat + 1
+        );
         $result = $verifier->verifyFields($fields, 'GET', '/data/1', 'data.read',
             $this->golden['pop_sig']['sig_b64url'], $this->golden['pop_sig']['nonce']);
 
@@ -169,7 +182,13 @@ class GoldenVectorTest extends TestCase
 
     public function testUnknownIssuer(): void
     {
-        $verifier = new \Rilavo\RilavoVerifier('verifier:test.example', '');
+        // Use the correct audience from golden vector but empty issuer PEM
+        $verifier = new \Rilavo\RilavoVerifier(
+            $this->golden['credential_fields']['aud'],
+            '',
+            null,
+            fn() => 1700000001 // Fixed time: iat + 1
+        );
         $result = $verifier->verifyFields(
             $this->golden['credential_fields'],
             'GET', '/data/1', 'data.read',
@@ -191,7 +210,12 @@ class GoldenVectorTest extends TestCase
         $fields = $this->golden['credential_fields'];
         $fields['sub'] = 'attacker';
 
-        $verifier = new \Rilavo\RilavoVerifier($this->golden['credential_fields']['aud'], $this->makeIssuerPem());
+        $verifier = new \Rilavo\RilavoVerifier(
+            $this->golden['credential_fields']['aud'],
+            $this->makeIssuerPem(),
+            null,
+            fn() => 1700000001 // Fixed time: iat + 1
+        );
         $result = $verifier->verifyFields($fields, 'GET', '/data/1', 'data.read',
             $this->golden['pop_sig']['sig_b64url'], $this->golden['pop_sig']['nonce']);
 
@@ -200,7 +224,12 @@ class GoldenVectorTest extends TestCase
 
     public function testReplayDetection(): void
     {
-        $verifier = new \Rilavo\RilavoVerifier($this->golden['credential_fields']['aud'], $this->makeIssuerPem());
+        $verifier = new \Rilavo\RilavoVerifier(
+            $this->golden['credential_fields']['aud'],
+            $this->makeIssuerPem(),
+            null,
+            fn() => 1700000001 // Fixed time: iat + 1
+        );
         $nonce = 'test-replay-' . time();
         $fields = $this->golden['credential_fields'];
         $fields['nonce'] = $nonce;
@@ -222,7 +251,8 @@ class GoldenVectorTest extends TestCase
         $verifier = new \Rilavo\RilavoVerifier(
             $this->golden['credential_fields']['aud'],
             $this->makeIssuerPem(),
-            function($n) use ($nonce) { return $n === $nonce; }
+            function($n) use ($nonce) { return $n === $nonce; },
+            fn() => 1700000001 // Fixed time: iat + 1
         );
 
         $fields = $this->golden['credential_fields'];
@@ -380,5 +410,21 @@ class GoldenVectorTest extends TestCase
             sodium_crypto_sign_seed_keypair(str_repeat("", 32))
         ));
         return base64_encode($sig);
+    }
+
+    
+    /**
+     * Convert base64url raw key to PEM format
+     */
+    private function pemFromRaw(string $raw): string
+    {
+        $raw = strtr($raw, '-_', '+/');
+        $padding = strlen($raw) % 4;
+        if ($padding) {
+            $raw .= str_repeat('=', 4 - $padding);
+        }
+        $der = base64_decode($raw);
+        $pem = "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($der), 64, "\n") . "-----END PUBLIC KEY-----\n";
+        return $pem;
     }
 }

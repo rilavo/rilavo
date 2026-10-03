@@ -88,3 +88,32 @@ $total total: $pass pass, $fail fail
         exit(1);
     }
 }
+
+
+
+// Mock WordPress functions for testing
+if (!function_exists('get_transient')) {
+    $transient_store = [];
+    function get_transient($key) {
+        global $transient_store;
+        return $transient_store[$key] ?? false;
+    }
+}
+
+if (!function_exists('set_transient')) {
+    function set_transient($key, $value, $expiration) {
+        global $transient_store;
+        $transient_store[$key] = $value;
+        return true;
+    }
+}
+
+if (!function_exists('delete_transient')) {
+    function delete_transient($key) {
+        global $transient_store;
+        unset($transient_store[$key]);
+        return true;
+    }
+}
+
+
