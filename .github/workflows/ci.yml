@@ -20,7 +20,18 @@ jobs:
       run:
         working-directory: ./
     steps:
-      - uses: actions/checkout@v4
+            - uses: actions/checkout@v4
+      - name: Debug workspace and working directory
+        run: |
+          echo "Workspace: ${{ github.workspace }}"
+          echo "PWD: $(pwd)"
+          echo "Listing workspace root:"
+          ls -la ${{ github.workspace }}
+          echo "Listing current directory:"
+          ls -la
+          echo "Checking for docs folder:"
+          ls -la docs/ 2>/dev/null || echo "docs/ not found in PWD"
+          ls -la ${{ github.workspace }}/docs 2>/dev/null || echo "docs/ not found in workspace"
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -150,7 +161,18 @@ jobs:
     name: Installation Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+            - uses: actions/checkout@v4
+      - name: Debug workspace and working directory
+        run: |
+          echo "Workspace: ${{ github.workspace }}"
+          echo "PWD: $(pwd)"
+          echo "Listing workspace root:"
+          ls -la ${{ github.workspace }}
+          echo "Listing current directory:"
+          ls -la
+          echo "Checking for docs folder:"
+          ls -la docs/ 2>/dev/null || echo "docs/ not found in PWD"
+          ls -la ${{ github.workspace }}/docs 2>/dev/null || echo "docs/ not found in workspace"
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -169,7 +191,18 @@ jobs:
     name: Smoke Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+            - uses: actions/checkout@v4
+      - name: Debug workspace and working directory
+        run: |
+          echo "Workspace: ${{ github.workspace }}"
+          echo "PWD: $(pwd)"
+          echo "Listing workspace root:"
+          ls -la ${{ github.workspace }}
+          echo "Listing current directory:"
+          ls -la
+          echo "Checking for docs folder:"
+          ls -la docs/ 2>/dev/null || echo "docs/ not found in PWD"
+          ls -la ${{ github.workspace }}/docs 2>/dev/null || echo "docs/ not found in workspace"
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -230,7 +263,18 @@ jobs:
     name: Packaging Validation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+            - uses: actions/checkout@v4
+      - name: Debug workspace and working directory
+        run: |
+          echo "Workspace: ${{ github.workspace }}"
+          echo "PWD: $(pwd)"
+          echo "Listing workspace root:"
+          ls -la ${{ github.workspace }}
+          echo "Listing current directory:"
+          ls -la
+          echo "Checking for docs folder:"
+          ls -la docs/ 2>/dev/null || echo "docs/ not found in PWD"
+          ls -la ${{ github.workspace }}/docs 2>/dev/null || echo "docs/ not found in workspace"
       - name: Set up Python
         uses: actions/setup-python@v5
         with:

@@ -107,6 +107,11 @@ jobs:
         working-directory: ./
     steps:
       - uses: actions/checkout@v4
+      - name: Debug workspace
+        run: |
+          echo "Workspace: ${{ github.workspace }}"
+          echo "PWD: $(pwd)"
+          ls -la ${{ github.workspace }}/docs 2>/dev/null || echo "docs/ not found in workspace"
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -138,6 +143,11 @@ jobs:
         working-directory: ./
     steps:
       - uses: actions/checkout@v4
+      - name: Debug workspace
+        run: |
+          echo "Workspace: ${{ github.workspace }}"
+          echo "PWD: $(pwd)"
+          ls -la ${{ github.workspace }}/docs 2>/dev/null || echo "docs/ not found in workspace"
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
