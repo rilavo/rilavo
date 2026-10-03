@@ -77,11 +77,20 @@ jobs:
         run: npm run build
       - name: Run tests
         run: npm test
+      - name: Upload TypeScript SDK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rilavo-ts-sdk
+          path: |
+            sdks/typescript/dist
+            sdks/typescript/package.json
+          retention-days: 1
 
   # Next.js SDK Tests
   next-tests:
     name: Next.js SDK Tests
     runs-on: ubuntu-latest
+    needs: ts-tests
     defaults:
       run:
         working-directory: ./sdks/nextjs
@@ -93,11 +102,18 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
           cache-dependency-path: sdks/nextjs/package-lock.json
+      - name: Download TypeScript SDK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: rilavo-ts-sdk
+          path: ../typescript
       - name: Install TypeScript SDK
         run: |
           cd ../typescript
-          npm ci
-          npm run build
+          npm pack
+          TARBALL=$(ls rilavo-*.tgz)
+          cd ../nextjs
+          npm install ../typescript/$TARBALL
       - name: Install Next.js dependencies
         run: npm ci
       - name: Run tests
