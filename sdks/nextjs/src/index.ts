@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 
-import { NonceCache } from '@rilavo/sdk';
+import { NonceCache } from './rilavo-sdk/index.js';
 // OTel instrumentation
 let _otelInitialized = false;
 async function ensureOtelInitialized() {
@@ -57,7 +57,7 @@ function getNextResponse(): NextResponseLike {
   const { NextResponse } = require('next/server');
   return NextResponse;
 }
-import type { Credential, PopRequest, VerifyOptions, VerifyResult } from '@rilavo/sdk';
+import type { Credential, PopRequest, VerifyOptions, VerifyResult } from './rilavo-sdk/index.js';
 
 // Optional SDK injection for testing
 type VerifyCredentialFn = (
@@ -76,10 +76,15 @@ export function clearInjectedVerifyCredential() {
   _injectedVerifyCredential = null;
 }
 
-function getVerifyCredential(): VerifyCredentialFn {
+let _cachedVerifyCredential: VerifyCredentialFn | null = null;
+
+async function getVerifyCredential(): Promise<VerifyCredentialFn> {
   if (_injectedVerifyCredential) return _injectedVerifyCredential;
-  const { verifyCredential } = require('@rilavo/sdk');
-  return verifyCredential;
+  if (!_cachedVerifyCredential) {
+    const { verifyCredential } = await import('./rilavo-sdk/index.js');
+    _cachedVerifyCredential = verifyCredential;
+  }
+  return _cachedVerifyCredential;
 }
 
 export interface RilavoNextConfig {
@@ -163,7 +168,7 @@ export function createMiddleware(config: RilavoNextConfig) {
     const nonce = req.headers.get('x-rilavo-request-nonce') ?? '';
 
     // Use injected SDK or dynamic import
-    const verifyCredential = getVerifyCredential();
+    const verifyCredential = await getVerifyCredential();
     // Extract issuer for metrics
     const issuer = credential.iss as string | undefined;
 

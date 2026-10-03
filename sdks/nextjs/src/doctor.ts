@@ -23,7 +23,7 @@ export function runDoctor(online = false): { ok: boolean; checks: CheckResult[] 
       message: 'rilavo CLI found on PATH' 
     },
     { 
-      name: 'import @rilavo/sdk', 
+      name: 'import ./rilavo-sdk/index.js', 
       ok: !!process.env.PATH?.includes('rilavo'), 
       message: 'import succeeds' 
     },

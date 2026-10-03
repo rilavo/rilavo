@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 describe('Rilavo Next.js Middleware', () => {
   test('middleware loads correctly', async () => {
-    const { createMiddleware } = await import('../src/index.js');
+    const { createMiddleware } = await import('../dist/index.js');
     assert.ok(typeof createMiddleware === 'function');
   });
 });

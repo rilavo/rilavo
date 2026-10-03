@@ -8,14 +8,17 @@
     "next": ">=13.0.0"
   },
   "dependencies": {
-    "@rilavo/sdk": "file:../rilavo-ts",
     "@opentelemetry/api": "^1.4.0",
     "@opentelemetry/resources": "^1.13.0",
     "@opentelemetry/sdk-trace-node": "^1.13.0",
     "@opentelemetry/sdk-metrics": "^1.13.0",
     "@opentelemetry/exporter-prometheus": "^0.40.0",
     "@opentelemetry/instrumentation": "^0.42.0",
-    "@opentelemetry/instrumentation-http": "^0.42.0"
+    "@opentelemetry/instrumentation-http": "^0.42.0",
+    "@opentelemetry/semantic-conventions": "^1.13.0",
+    "@opentelemetry/sdk-trace-base": "^1.13.0",
+    "@opentelemetry/sdk-node": "^0.42.0",
+    "ioredis": "^5.0.0"
   },
   "keywords": [
     "rilavo",
