@@ -1,32 +1,37 @@
 version: 2
 updates:
-  - package-ecosystem: "pip"
-    directory: "/rilavo-protocol"
-    schedule:
-      interval: "weekly"
-    labels: ["dependencies", "python"]
+  # Python dependencies (root pyproject.toml)
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
-    labels: ["dependencies", "python"]
-  - package-ecosystem: "npm"
-    directory: "/packages/rilavo-ts"
-    schedule:
-      interval: "weekly"
-    labels: ["dependencies", "typescript"]
-  - package-ecosystem: "npm"
-    directory: "/packages/rilavo-next"
-    schedule:
-      interval: "weekly"
-    labels: ["dependencies", "typescript"]
+
+  # Go SDK
   - package-ecosystem: "gomod"
-    directory: "/packages/rilavo-go"
+    directory: "/sdks/go"
     schedule:
       interval: "weekly"
-    labels: ["dependencies", "go"]
+
+  # TypeScript SDK
+  - package-ecosystem: "npm"
+    directory: "/sdks/typescript"
+    schedule:
+      interval: "weekly"
+
+  # Next.js SDK
+  - package-ecosystem: "npm"
+    directory: "/sdks/nextjs"
+    schedule:
+      interval: "weekly"
+
+  # WordPress SDK (composer)
+  - package-ecosystem: "composer"
+    directory: "/sdks/wordpress"
+    schedule:
+      interval: "weekly"
+
+  # GitHub Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
-    labels: ["dependencies", "github-actions"]

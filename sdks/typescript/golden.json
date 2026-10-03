@@ -1,0 +1,43 @@
+{
+  "jcs": [
+    {
+      "input": {
+        "b": "2",
+        "a": "1"
+      },
+      "expected": "{\"a\":\"1\",\"b\":\"2\"}"
+    },
+    {
+      "input": {
+        "k": "line\nbreak"
+      },
+      "expected": "{\"k\":\"line\\nbreak\"}"
+    }
+  ],
+  "pop": {
+    "method": "GET",
+    "path": "/data/1",
+    "act": "data.read",
+    "nonce": "corpus-nonce",
+    "payload_hex": "7b2272696c61766f5f706f705f7630223a2236646237333432336537333761663333326134613434366239653438303232643666656538326633653330313364333735376233333937356634353666653739227d"
+  },
+  "issuer_pub_b64url": "Qf15SpykbtC8WYsp2k1DbunMFdGh-J5DHLOnNL_4dto",
+  "agent_pub_b64url": "Eo1qpPQ4HTpb6ULWtKr3jQ9s6Y05PS0YN7ZFgqwNDr8",
+  "pop_sig": {
+    "sig_b64url": "pozWDsdfi9p_DETE4LwYowZp1HGWv4NcgW09-IGe6rVy16H-yBpn2QNbuqDHKYaAm6n6EZ8clmNaaAA2yp3dBA",
+    "nonce": "corpus-nonce"
+  },
+  "credential_fields": {
+    "iss": "rilavo:iss:goldencorpus",
+    "sub": "did:example:alice",
+    "agt": "did:example:alice-bot",
+    "apk": "Eo1qpPQ4HTpb6ULWtKr3jQ9s6Y05PS0YN7ZFgqwNDr8",
+    "act": "data.read",
+    "aud": "svc:corpus",
+    "iat": 1700000000,
+    "exp": 1700014400,
+    "nonce": "f7-lJTpm-Tvh8KUgeROwIQ",
+    "sig": "HiUpojutTBW-V-LKVnJbL8qcMu_cffFvndalJ0b7G4NZwq21IegqxN-XQsrtAwxJSnE6TAWxjvc1v_rathg8Ag"
+  },
+  "credential_sig_b64url": "HiUpojutTBW-V-LKVnJbL8qcMu_cffFvndalJ0b7G4NZwq21IegqxN-XQsrtAwxJSnE6TAWxjvc1v_rathg8Ag"
+}

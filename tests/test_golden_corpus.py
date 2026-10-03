@@ -16,9 +16,9 @@ from rilavo.pop import Request, request_payload
 from rilavo.revocation import RevocationLog
 from rilavo.verifier import verify
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "golden"
-GO_COPY = ROOT / "packages" / "rilavo-go" / "testdata" / "golden.json"
+GO_COPY = ROOT / "sdks" / "go" / "testdata" / "golden.json"
 
 
 @pytest.fixture(scope="module")
@@ -89,5 +89,5 @@ def test_reject_vectors(golden, rejects, case):
 
 def test_go_copy_does_not_drift():
     assert GO_COPY.read_bytes() == (CORPUS / "golden.json").read_bytes(), (
-        "packages/rilavo-go/testdata/golden.json diverged from golden/; "
+        "sdks/go/testdata/golden.json diverged from golden/; "
         "regenerate via scripts/generate_golden_vectors.py and re-copy")
