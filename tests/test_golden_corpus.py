@@ -56,7 +56,11 @@ def _make_dir(issuer_pub_b64url: str) -> KeyDirectory:
 def _verify(fields: dict, golden: dict, method="GET", path="/data/1",
             act="data.read"):
     d = _make_dir(golden["issuer_pub_b64url"])
-    cred = Credential.from_json(json.dumps(fields))
+    # Ensure signature is included for shape validation
+    test_fields = dict(fields)
+    if "sig" not in test_fields:
+        test_fields["sig"] = golden["credential_sig_b64url"]
+    cred = Credential.from_json(json.dumps(test_fields))
     req = Request(method=method, path=path, requested_action=act,
                   signature=golden["pop_sig"]["sig_b64url"],
                   request_nonce=golden["pop_sig"]["nonce"])
@@ -69,18 +73,18 @@ def _verify(fields: dict, golden: dict, method="GET", path="/data/1",
 
 
 def test_full_accept_path(golden):
-    assert _verify(dict(golden["credential_fields"]), golden).strip() == "accept"
+    fields = dict(golden["credential_fields"])
+    fields["sig"] = golden["credential_sig_b64url"]
+    assert _verify(fields, golden).strip() == "accept"
 
 
 @pytest.mark.parametrize("case", ["unknown_version", "wrong_audience", "expired"])
 def test_reject_vectors(golden, rejects, case):
     spec = rejects[case]
     fields = dict(golden["credential_fields"])
-    fields.update({k: v for k, v in spec["credential_fields"].items()
-                   if k not in ("sig",)})
-    # sig no longer covers mutated fields -> re-sign is out of scope for a
-    # vector; instead verify against the ORIGINAL signed credential when the
-    # mutation invalidates the signature path differently.
+    fields["sig"] = golden["credential_sig_b64url"]
+    # Update with reject spec fields (including mutated fields like exp, aud, ver)
+    fields.update({k: v for k, v in spec["credential_fields"].items()})
     with pytest.raises(VerificationError) as ei:
         _verify(fields, golden)
     assert ei.value.reason_code == spec["expected_reason"], (

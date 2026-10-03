@@ -45,3 +45,5 @@ tmp/
 
 # Local development
 rilavo-env/
+.gitignore
+sdks/wordpress/vendor/

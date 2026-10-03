@@ -31,13 +31,13 @@
     "iss": "rilavo:iss:goldencorpus",
     "sub": "did:example:alice",
     "agt": "did:example:alice-bot",
-    "apk": "3eO8zsfzpmoRFfRdcg9NwTXDrnxOItyjj9se_WpJX_g",
-    "act": "data.read",
     "aud": "svc:corpus",
+    "act": "data.read",
+    "apk": "3eO8zsfzpmoRFfRdcg9NwTXDrnxOItyjj9se_WpJX_g",
     "iat": 1700000000,
-    "exp": 1700014400,
-    "nonce": "wlZK1KYdsvql5RghoSRrxw",
-    "sig": "-yYGIqgJ0BWNj2CrbgguBbdfSzFzxIu5KKjd-LYKa_stGuH24TuorNUcP1B5PqMlaJ0LcE5r8ACW4nUd9vuWBg"
+    "exp": 1700003600,
+    "nonce": "goldencorpus-nonce-fixed",
+    "sig": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg"
   },
-  "credential_sig_b64url": "-yYGIqgJ0BWNj2CrbgguBbdfSzFzxIu5KKjd-LYKa_stGuH24TuorNUcP1B5PqMlaJ0LcE5r8ACW4nUd9vuWBg"
+  "credential_sig_b64url": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg"
 }

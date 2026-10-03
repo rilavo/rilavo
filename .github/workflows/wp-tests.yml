@@ -66,15 +66,10 @@ jobs:
           php-version: '8.3'
           extensions: json, mbstring
           coverage: none
+          tools: composer:v2
 
-      - name: Install PHP_CodeSniffer
-        run: composer global require "squizlabs/php_codesniffer=*"
-
-      - name: Install WordPress Coding Standards
-        run: |
-          composer global require "wp-coding-standards/wpcs=*"
-          phpcs --config-set installed_paths ~/.composer/vendor/wp-coding-standards/wpcs
+      - name: Install dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Run PHPCS
-        run: |
-          phpcs --standard=WordPress --extensions=php .
+        run: vendor/bin/phpcs --standard=WordPress --extensions=php includes/

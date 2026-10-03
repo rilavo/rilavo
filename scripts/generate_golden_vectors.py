@@ -48,6 +48,23 @@ def main() -> None:
     issuer_pub_b64 = b64url_encode(bytes(issuer_pub.public_bytes(
         Encoding.Raw, PublicFormat.Raw)))
     
+    # Compute signature for the credential (deterministic)
+    signing_payload = {
+        "iss": "rilavo:iss:goldencorpus",
+        "sub": "did:example:alice",
+        "agt": "did:example:alice-bot",
+        "aud": "svc:corpus",
+        "act": "data.read",
+        "apk": agent_pub_b64,
+        "iat": 1700000000,
+        "exp": 1700003600,
+        "nonce": "goldencorpus-nonce-fixed",
+    }
+    from rilavo.canonical import canonicalize
+    payload_bytes = canonicalize(signing_payload)
+    sig_bytes = issuer_priv.sign(payload_bytes)
+    sig_b64 = b64url_encode(sig_bytes)
+
     cred_fields = {
         "iss": "rilavo:iss:goldencorpus",
         "sub": "did:example:alice",
@@ -57,7 +74,8 @@ def main() -> None:
         "apk": agent_pub_b64,
         "iat": 1700000000,
         "exp": 1700003600,
-        "nonce": "goldencorpus-nonce-fixed",  # Fixed nonce
+        "nonce": "goldencorpus-nonce-fixed",
+        "sig": sig_b64,  # Include signature in credential fields for SDK tests
     }
 
     # Manually construct credential signing payload and compute signature
@@ -112,7 +130,7 @@ def main() -> None:
         },
     }
     (out_dir / "rejects.json").write_text(json.dumps(rejects, indent=2) + "\n")
-    print(f"wrote {out_dir/\'golden.json\'} and {out_dir/\'rejects.json\'}")
+    print(f"wrote {out_dir / 'golden.json'} and {out_dir / 'rejects.json'}")
 
 if __name__ == "__main__":
     main()
