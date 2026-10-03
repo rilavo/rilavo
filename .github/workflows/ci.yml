@@ -213,7 +213,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
       - name: Install twine
-        run: uv pip install twine
+        run: uv pip install --system twine
       - name: Build and validate
         run: |
           uv build
