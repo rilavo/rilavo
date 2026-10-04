@@ -45,6 +45,8 @@ jobs:
         run: uv sync --all-extras
       - name: Run tests
         run: uv run pytest tests/ -q
+      - name: Install mypy
+        run: uv pip install mypy
       - name: Type check (mypy)
         run: uv run mypy src/rilavo --ignore-missing-imports
       - name: Lint (ruff)
