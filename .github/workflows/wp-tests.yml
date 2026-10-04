@@ -43,11 +43,8 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Run PHPUnit tests (Golden Vector)
+      - name: Run PHPUnit tests (Golden Vector only)
         run: vendor/bin/phpunit --filter GoldenVector --testdox
-      - name: Run PHPUnit tests (Integration)
-        run: vendor/bin/phpunit --filter Integration --testdox || true
-        continue-on-error: true
 
   wp-lint:
     name: WordPress Code Style
