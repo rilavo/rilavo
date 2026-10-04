@@ -49,8 +49,6 @@ jobs:
         run: uv pip install mypy
       - name: Type check (mypy)
         run: uv run mypy src/rilavo --ignore-missing-imports
-      - name: Install ruff
-        run: uv pip install ruff
       - name: Lint (ruff)
         run: uv run ruff check src/rilavo tests/
 
@@ -255,8 +253,8 @@ jobs:
           VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "//' | sed 's/"//')
           echo "pyproject.toml version: $VERSION"
           
-          # Extract version from __init__.py using Python
-          PY_VERSION=$(cd src/rilavo && python3 -c "import re, sys; content = open('__init__.py').read(); match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content); print(match.group(1))")
+          # Extract version from __init__.py using grep/sed (more reliable than Python in bash)
+          PY_VERSION=$(grep '__version__' src/rilavo/__init__.py | sed -E 's/.*= *["''']([^"''']+)["'''].*/\1/')
           echo "Python package version: $PY_VERSION"
           
           if [ "$VERSION" != "$PY_VERSION" ]; then
