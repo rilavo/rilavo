@@ -92,8 +92,8 @@ $total total: $pass pass, $fail fail
 
 
 // Mock WordPress functions for testing
+$transient_store = [];
 if (!function_exists('get_transient')) {
-    $transient_store = [];
     function get_transient($key) {
         global $transient_store;
         return $transient_store[$key] ?? false;

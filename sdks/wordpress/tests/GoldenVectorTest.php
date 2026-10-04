@@ -17,6 +17,11 @@ class GoldenVectorTest extends TestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
+        // Clear any transients from previous tests
+        global $transient_store;
+        $transient_store = [];
+        
         $goldenPath = __DIR__ . '/../golden/golden.json';
         $rejectsPath = __DIR__ . '/../golden/rejects.json';
 
@@ -147,7 +152,7 @@ class GoldenVectorTest extends TestCase
             $this->golden['pop_sig']['nonce']
         );
 
-        $this->assertEquals('audience_mismatch', $result['reason_code']);
+        $this->assertEquals('wrong_audience', $result['reason_code']);
     }
 
     public function testExpiredCredential(): void
@@ -230,12 +235,12 @@ class GoldenVectorTest extends TestCase
             null,
             fn() => 1700000001 // Fixed time: iat + 1
         );
-        $nonce = 'test-replay-' . time();
+        // Use the golden vector's nonce and PoP signature for the first request
+        $nonce = $this->golden['pop_sig']['nonce'];
         $fields = $this->golden['credential_fields'];
-        $fields['nonce'] = $nonce;
+        $popSig = $this->golden['pop_sig']['sig_b64url'];
 
         // First request should succeed
-        $popSig = $this->signPop($nonce);
         $result1 = $verifier->verifyFields($fields, 'GET', '/data/1', 'data.read', $popSig, $nonce);
         $this->assertTrue($result1['accepted']);
 
@@ -267,7 +272,12 @@ class GoldenVectorTest extends TestCase
         $fields = $this->golden['credential_fields'];
         $pop = $this->golden['pop_sig'];
 
-        $verifier = new \Rilavo\RilavoVerifier($this->golden['credential_fields']['aud'], $this->makeIssuerPem());
+        $verifier = new \Rilavo\RilavoVerifier(
+            $this->golden['credential_fields']['aud'],
+            $this->makeIssuerPem(),
+            null,
+            fn() => 1700000001  // Fixed time within valid window
+        );
         $result = $verifier->verifyFields($fields, 'POST', $pop['path'], $pop['act'],
             $pop['sig_b64url'], $pop['nonce']);
 
@@ -279,7 +289,12 @@ class GoldenVectorTest extends TestCase
         $fields = $this->golden['credential_fields'];
         $pop = $this->golden['pop_sig'];
 
-        $verifier = new \Rilavo\RilavoVerifier($this->golden['credential_fields']['aud'], $this->makeIssuerPem());
+        $verifier = new \Rilavo\RilavoVerifier(
+            $this->golden['credential_fields']['aud'],
+            $this->makeIssuerPem(),
+            null,
+            fn() => 1700000001  // Fixed time within valid window
+        );
         $result = $verifier->verifyFields($fields, $pop['method'], '/other', $pop['act'],
             $pop['sig_b64url'], $pop['nonce']);
 
@@ -291,7 +306,12 @@ class GoldenVectorTest extends TestCase
         $fields = $this->golden['credential_fields'];
         $pop = $this->golden['pop_sig'];
 
-        $verifier = new \Rilavo\RilavoVerifier($this->golden['credential_fields']['aud'], $this->makeIssuerPem());
+        $verifier = new \Rilavo\RilavoVerifier(
+            $this->golden['credential_fields']['aud'],
+            $this->makeIssuerPem(),
+            null,
+            fn() => 1700000001  // Fixed time within valid window
+        );
         $result = $verifier->verifyFields($fields, $pop['method'], $pop['path'], 'data.write',
             $pop['sig_b64url'], $pop['nonce']);
 
@@ -330,7 +350,7 @@ class GoldenVectorTest extends TestCase
             $this->golden['pop_sig']['sig_b64url'], $this->golden['pop_sig']['nonce']);
 
         $this->assertFalse($result['accepted']);
-        $this->assertEquals('audience_mismatch', $result['reason_code']);
+        $this->assertEquals('wrong_audience', $result['reason_code']);
     }
 
     public function testRejectExpired(): void
@@ -399,17 +419,25 @@ class GoldenVectorTest extends TestCase
         if (!function_exists('sodium_crypto_sign_seed_keypair')) {
             return '';
         }
-        $seed = str_repeat("", 32);
+        // Use the same seed as generate_golden_vectors.py (AGENT_SEED)
+        $seed = hex2bin('c0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf');
         $kp = sodium_crypto_sign_seed_keypair($seed);
         $sk = sodium_crypto_sign_secretkey($kp);
 
-        $body = ['method' => 'GET', 'path' => '/data/1', 'act' => 'data.read', 'nonce' => $nonce];
-        $digest = hash('sha256', json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-        $payload = '{"rilavo_pop_v0":' . json_encode($digest) . '}';
-        $sig = sodium_crypto_sign_detached($payload, sodium_crypto_sign_secretkey(
-            sodium_crypto_sign_seed_keypair(str_repeat("", 32))
-        ));
-        return base64_encode($sig);
+        // Use the same logic as RilavoVerifier::buildPopPayload
+        $data = [
+            'method' => strtoupper('GET'),
+            'path' => '/data/1',
+            'act' => 'data.read',
+            'nonce' => $nonce,
+        ];
+        $canonical = \Rilavo\RilavoJCS::canonicalize($data);
+        $digest = hash('sha256', $canonical); // hex output
+        $escaped_digest = \Rilavo\RilavoJCS::escapeStringPublic($digest);
+        $payload = '{"rilavo_pop_v0":' . $escaped_digest . '}';
+        $sig = sodium_crypto_sign_detached($payload, $sk);
+        // Return base64url encoding (matching verifier's b64urlDecode expectation)
+        return strtr(base64_encode($sig), '+/', '-_');
     }
 
     

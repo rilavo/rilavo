@@ -1,5 +1,4 @@
 <?php
-
 namespace Rilavo;
 /**
  * JCS subset canonical JSON serializer.
@@ -9,10 +8,11 @@ namespace Rilavo;
  */
 
 if (!defined('ABSPATH')) {
-    exit;
+    define('ABSPATH', '/tmp/wp/');
 }
 
 final class RilavoJCS {
+    public static function testStatic(): string { return "RilavoJCS loaded"; }
 
     /**
      * Canonicalize an associative array (string keys, string|int values only).

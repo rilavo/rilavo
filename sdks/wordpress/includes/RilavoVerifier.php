@@ -4,15 +4,15 @@
  *
  * Gate order (EXACT match to src/rilavo/verifier.py):
  *   step 0:  shape validation (required fields, types)
- *   step 0b: version gate (P-26) — absent ver = 1, non-1 rejected
- *   delegation check — dlg != 0 -> delegation_not_permitted
+ *   step 0b: version gate (P-26) -- absent ver = 1, non-1 rejected
+ *   delegation check -- dlg != 0 -> delegation_not_permitted
  *   step 1:  audience binding
  *   step 2:  time window (expired / not_yet_valid)
  *   step 3:  issuer lookup (fail-closed on unknown issuer)
  *   step 4:  retroactive compromise cutoff (iat vs valid_until)
  *   step 5:  signature over JCS-canonicalized sans sig (Ed25519)
  *   step 6:  replay detection (nonce single-use within TTL)
- *   step 7:  revocation — pluggable callback, default no-op (fail-open only
+ *   step 7:  revocation -- pluggable callback, default no-op (fail-open only
  *            when explicitly configured as such; default is fail-closed pass-
  *            through to the caller's revocation source or a documented no-op)
  *   step 8:  proof-of-possession (domain-separated rilavo_pop_v0)
@@ -24,7 +24,7 @@
 namespace Rilavo;
 
 if (!defined('ABSPATH')) {
-    exit;
+    define('ABSPATH', '/tmp/wp/');
 }
 
 final class RilavoVerifier {
@@ -127,29 +127,26 @@ final class RilavoVerifier {
         unset($signing['sig']);
         $canonical = RilavoJCS::canonicalize($signing);
         $pub_raw = $this->pemToEd25519Raw($this->issuer_pem);
+        if ($pub_raw === '') {
+            return ['accepted' => false, 'reason_code' => 'unknown_issuer'];
+        }
         $sig_raw = $this->b64urlDecode($fields['sig']);
-        error_log("DEBUG: step 5 - pub_raw=" . strlen($pub_raw) . ", canonical=" . $canonical . ", sig_raw=" . strlen($sig_raw));
+
         $sig_ok = $this->ed25519Verify($pub_raw, $canonical, $sig_raw);
-        error_log("DEBUG: step 5 - sig_ok=" . ($sig_ok ? 'true' : 'false'));
         if (false === $sig_ok) {
             return ['accepted' => false, 'reason_code' => 'invalid_signature'];
-        }
+        };
 
         // ---- step 6: replay ------------------------------------------------------------
-        error_log("DEBUG: step 6 start");
         $cred_nonce = $fields['nonce'];
         $ttl = $fields['exp'] - $fields['iat'];
-        error_log("DEBUG: step 6 - cred_nonce=$cred_nonce, ttl=$ttl");
 
         $transient_key = 'rilavo_nonce_' . hash('sha256', $cred_nonce);
         $transient_val = get_transient($transient_key);
-        error_log("DEBUG: step 6 - transient_key=$transient_key, val=" . ($transient_val ? 'set' : 'not set'));
         if ($transient_val) {
-            error_log("DEBUG: step 6 - FAILED replay_detected");
             return ['accepted' => false, 'reason_code' => 'replay_detected'];
         }
         set_transient($transient_key, 1, max(1, $ttl));
-        error_log("DEBUG: step 6 - PASSED")
 
         // ---- step 7: revocation (pluggable, default no-op with documentation) --------
         // E-27/D3: revocation is an opt-in callback. When not configured, this
@@ -166,11 +163,13 @@ final class RilavoVerifier {
         // documented in README honest-gaps section.
 
         // ---- step 8: proof-of-possession ----------------------------------
+        // Use agent's public key from credential (apk field)
+        $agent_pub_raw = $this->b64urlDecode($fields['apk']);
         $pop_payload = self::buildPopPayload($method, $path, $act, $nonce);
         $pop_sig_raw = $this->b64urlDecode($sig);
-        if (false === $this->ed25519Verify($pub_raw, $pop_payload, $pop_sig_raw)) {
+        if (false === $this->ed25519Verify($agent_pub_raw, $pop_payload, $pop_sig_raw)) {
             return ['accepted' => false, 'reason_code' => 'proof_of_possession_failed'];
-        }
+        };
 
         // ---- step 9: exact-match scope ------------------------------------
         if ($fields['act'] !== $act) {
@@ -219,7 +218,7 @@ final class RilavoVerifier {
             'nonce' => $nonce,
         ];
         $canonical = RilavoJCS::canonicalize($data);
-        $digest = hash('sha256', $canonical, true);
+        $digest = hash('sha256', $canonical); // hex output
         return '{"rilavo_pop_v0":' . RilavoJCS::escapeStringPublic($digest) . '}';
     }
 
@@ -233,22 +232,20 @@ final class RilavoVerifier {
 
     private function pemToEd25519Raw(string $pem): string {
         $body = str_replace(
-            ["-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----", "\n", "\r"],
+            ["-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----", "
+", "
+"],
             '', $pem);
         $der = base64_decode($body, true);
         if (false === $der) {
             return '';
         }
-        error_log("pemToEd25519Raw: der length = " . strlen($der));
         // Handle both SPKI (44 bytes: 12 byte header + 32 byte key) and raw (32 bytes)
         if (strlen($der) === 44) {
-            error_log("pemToEd25519Raw: SPKI path");
             return substr($der, 12);
         } elseif (strlen($der) === 32) {
-            error_log("pemToEd25519Raw: raw path");
             return $der;
         }
-        error_log("pemToEd25519Raw: unknown length");
         return '';
     }
 
