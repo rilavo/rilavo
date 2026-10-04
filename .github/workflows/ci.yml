@@ -35,7 +35,7 @@ jobs:
           ls -la docs/ 2>/dev/null || echo "docs/ not found in PWD"
           ls -la ${{ github.workspace }}/docs 2>/dev/null || echo "docs/ not found in workspace"
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
@@ -192,7 +192,7 @@ jobs:
           ls -la docs/ 2>/dev/null || echo "docs/ not found in PWD"
           ls -la ${{ github.workspace }}/docs 2>/dev/null || echo "docs/ not found in workspace"
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
@@ -223,7 +223,7 @@ jobs:
         with:
           path: .
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
@@ -272,7 +272,7 @@ jobs:
         with:
           path: .
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
