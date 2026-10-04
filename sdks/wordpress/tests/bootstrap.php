@@ -59,7 +59,7 @@ function assert_not_eq($label, $got, $want) {
 
 // Load golden vectors
 function load_golden_vectors(): array {
-    $path = __DIR__ . '/../../golden/golden.json';
+    $path = __DIR__ . '/../golden/golden.json';
     if (!file_exists($path)) {
         $path = __DIR__ . '/../../../golden/golden.json';
     }
@@ -67,7 +67,7 @@ function load_golden_vectors(): array {
 }
 
 function load_reject_vectors(): array {
-    $path = __DIR__ . '/../../golden/rejects.json';
+    $path = __DIR__ . '/../golden/rejects.json';
     if (!file_exists($path)) {
         $path = __DIR__ . '/../../../golden/rejects.json';
     }

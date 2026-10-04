@@ -1,4 +1,6 @@
 <?php
+
+namespace Rilavo;
 /**
  * OpenTelemetry instrumentation for Rilavo WordPress SDK.
  * Provides metrics for verification operations.

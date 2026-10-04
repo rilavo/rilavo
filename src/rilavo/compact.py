@@ -104,7 +104,8 @@ def from_compact(data: bytes, resolve_issuer: Callable,
     # Array header:
     ah = data[offset]; offset += 1
     count = ah & 0x1F
-    items = []
+    from typing import Tuple
+    items: list[bytes | int] = []
     for _ in range(count):
         major = data[offset] >> 5
         minor = data[offset] & 0x1F
@@ -121,7 +122,7 @@ def from_compact(data: bytes, resolve_issuer: Callable,
             items.append(bytes(data[offset:offset+length])); offset += length
         elif major == 0:  # unsigned int
             if minor < 24:
-                items.append(minor); 
+                items.append(minor)
             elif minor == 24:
                 items.append(data[offset]); offset += 1
             elif minor == 25:
@@ -136,23 +137,23 @@ def from_compact(data: bytes, resolve_issuer: Callable,
     iss = resolve_issuer(fp8)
     if iss is None:
         raise ValueError("unknown issuer fingerprint")
-    act = resolve_act(act_hash.hex())
+    act = resolve_act(act_hash.hex())  # type: ignore[union-attr]
     if act is None:
         raise ValueError("unknown action hash")
-    aud = resolve_aud(aud_hash.hex())
+    aud = resolve_aud(aud_hash.hex())  # type: ignore[union-attr]
     if aud is None:
         raise ValueError("unknown audience hash")
 
     import base64 as b64mod
     return {
         "iss": iss,
-        "apk": b64mod.urlsafe_b64encode(pub_raw).decode().rstrip("="),
+        "apk": b64mod.urlsafe_b64encode(pub_raw).decode().rstrip("="),  # type: ignore[arg-type]
         "act": act,
         "aud": aud,
         "iat": iat,
         "exp": exp,
-        "nonce": b64mod.urlsafe_b64encode(nonce_raw).decode().rstrip("="),
-        "sig": b64mod.urlsafe_b64encode(sig_raw).decode().rstrip("="),
+        "nonce": b64mod.urlsafe_b64encode(nonce_raw).decode().rstrip("="),  # type: ignore[arg-type]
+        "sig": b64mod.urlsafe_b64encode(sig_raw).decode().rstrip("="),  # type: ignore[arg-type]
     }
 
 

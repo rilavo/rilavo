@@ -7,6 +7,7 @@ wrapper that fetches from an HTTPS endpoint. TLS-only, fail-closed.
 from __future__ import annotations
 
 import json
+import time
 import urllib.request
 
 from .discovery import validate_discovery_document
@@ -36,7 +37,7 @@ class DiscoveringKeyDirectory:
         self.url = url
         self.ttl_seconds = ttl_seconds
         self.allow_stale_on_error = allow_stale_on_error
-        self._cache = None
+        self._cache: dict | None = None
         self._cached_at: float = 0.0
 
     def _fetch(self) -> dict:
@@ -68,7 +69,7 @@ class DiscoveringKeyDirectory:
         """KeyDirectory-compatible lookup."""
         if not self._ensure_fresh():
             return None     # fail-closed -> verifier sees unknown_issuer
-        for entry in self._cache.get("entries", []):
+        for entry in (self._cache or {}).get("entries", []):
             if entry["issuer_id"] == issuer_id:
                 vu = entry.get("valid_until")
                 if vu is not None and vu < time.time():

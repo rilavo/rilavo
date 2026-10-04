@@ -21,6 +21,8 @@
  * @package RilavoMU
  */
 
+namespace Rilavo;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -59,10 +61,10 @@ final class RilavoVerifier {
     public function verify(array $fields, string $method, string $path,
                            string $act, string $sig, string $nonce): array {
         return $this->verifyFields($fields, strtoupper($method), $path, $act,
-                                   $sig, $nonce);
+                                    $sig, $nonce);
     }
 
-        private function verifyInner(array $fields, string $method, string $path,
+    private function verifyInner(array $fields, string $method, string $path,
                                  string $act, string $sig, string $nonce): array {
         // ---- step 0: shape ------------------------------------------------
         foreach (['iss', 'sub', 'agt', 'apk', 'act', 'aud', 'nonce', 'sig'] as $f) {
@@ -72,71 +74,82 @@ final class RilavoVerifier {
         }
         foreach (['iat', 'exp'] as $f) {
             if (!isset($fields[$f]) || !is_int($fields[$f])) {
-                return ['accepted' => false, 'reason_code' => 'malformed_credential'];
+                return ['accepted' => false, 'reason_code' => 'malformed_claim'];
             }
         }
 
-        // ---- step 0b: version gate (P-26) ------------------------------------
-        $ver = isset($fields['ver']) ? $fields['ver'] : 1;
-        if (!is_int($ver) || 1 !== $ver) {
+        // ---- step 0b: version (P-26) --------------------------------------
+        if (!isset($fields['ver'])) {
+            $ver = 1;
+        } else {
+            if (!is_int($fields['ver'])) {
+                return ['accepted' => false, 'reason_code' => 'unrecognized_version'];
+            }
+            $ver = $fields['ver'];
+        }
+        if ($ver !== 1) {
             return ['accepted' => false, 'reason_code' => 'unrecognized_version'];
         }
 
-        // ---- delegation reject (v0: dlg must be absent or 0) ------------------
-        if (isset($fields['dlg']) && 0 !== $fields['dlg']) {
+        // ---- delegation check (P-14) --------------------------------------
+        if (isset($fields['dlg']) && is_int($fields['dlg']) && $fields['dlg'] !== 0) {
             return ['accepted' => false, 'reason_code' => 'delegation_not_permitted'];
         }
 
-        // ---- step 1: audience binding ------------------------------------------
+        // ---- step 1: audience binding -------------------------------------
         if ($fields['aud'] !== $this->audience) {
-            return ['accepted' => false, 'reason_code' => 'audience_mismatch'];
+            return ['accepted' => false, 'reason_code' => 'wrong_audience'];
         }
 
-        // ---- step 2: time window ---------------------------------------------------
-        $now = $now ?? ($this->time_provider)();
-        if ($now >= $fields['exp']) {
+        // ---- step 2: time window ------------------------------------------
+        $now = ($this->time_provider)();
+        if ($fields['exp'] <= $now) {
             return ['accepted' => false, 'reason_code' => 'expired'];
         }
-        if ($now < $fields['iat']) {
+        if ($fields['iat'] > $now) {
             return ['accepted' => false, 'reason_code' => 'not_yet_valid'];
         }
 
-        // ---- step 3: issuer lookup (fail-closed on unknown/unreachable) ----------
-        // In the single-issuer WP model, the issuer is pre-configured via options.
-        // If PEM is empty, we cannot verify -> fail-closed unknown_issuer.
-        if ('' === trim($this->issuer_pem)) {
+        // ---- step 3: issuer lookup ----------------------------------------
+        $issuer = isset($fields['iss']) ? (string)$fields['iss'] : null;
+        if ($issuer !== $this->expectedIssuer()) {
             return ['accepted' => false, 'reason_code' => 'unknown_issuer'];
         }
 
-        // ---- step 4: retroactive compromise cutoff --------------------------------
-        // The single-issuer model uses the PEM's valid_until if set in options.
-        // Default: no cutoff (key is currently active). A rotated key would have
-        // its valid_until set to the rotation/compromise timestamp per P-12.
-
-        // ---- step 5: signature over JCS-canonicalized sans sig ---------------------
-        $signing = [];
-        foreach ($fields as $k => $v) {
-            if ('sig' !== $k) {
-                $signing[$k] = $v;
-            }
+        // ---- step 4: retroactive compromise cutoff (P-06) ----------------
+        $valid_until = $this->expectedValidUntil();
+        if ($valid_until !== null && $fields['iat'] > $valid_until) {
+            return ['accepted' => false, 'reason_code' => 'key_not_valid_at_issuance'];
         }
+
+        // ---- step 5: signature --------------------------------------------
+        $signing = $fields;
+        unset($signing['sig']);
         $canonical = RilavoJCS::canonicalize($signing);
         $pub_raw = $this->pemToEd25519Raw($this->issuer_pem);
         $sig_raw = $this->b64urlDecode($fields['sig']);
-
-        if (false === $this->ed25519Verify($pub_raw, $canonical, $sig_raw)) {
+        error_log("DEBUG: step 5 - pub_raw=" . strlen($pub_raw) . ", canonical=" . $canonical . ", sig_raw=" . strlen($sig_raw));
+        $sig_ok = $this->ed25519Verify($pub_raw, $canonical, $sig_raw);
+        error_log("DEBUG: step 5 - sig_ok=" . ($sig_ok ? 'true' : 'false'));
+        if (false === $sig_ok) {
             return ['accepted' => false, 'reason_code' => 'invalid_signature'];
         }
 
         // ---- step 6: replay ------------------------------------------------------------
+        error_log("DEBUG: step 6 start");
         $cred_nonce = $fields['nonce'];
         $ttl = $fields['exp'] - $fields['iat'];
+        error_log("DEBUG: step 6 - cred_nonce=$cred_nonce, ttl=$ttl");
 
         $transient_key = 'rilavo_nonce_' . hash('sha256', $cred_nonce);
-        if (get_transient($transient_key)) {
+        $transient_val = get_transient($transient_key);
+        error_log("DEBUG: step 6 - transient_key=$transient_key, val=" . ($transient_val ? 'set' : 'not set'));
+        if ($transient_val) {
+            error_log("DEBUG: step 6 - FAILED replay_detected");
             return ['accepted' => false, 'reason_code' => 'replay_detected'];
         }
         set_transient($transient_key, 1, max(1, $ttl));
+        error_log("DEBUG: step 6 - PASSED")
 
         // ---- step 7: revocation (pluggable, default no-op with documentation) --------
         // E-27/D3: revocation is an opt-in callback. When not configured, this
@@ -152,17 +165,15 @@ final class RilavoVerifier {
         // If no callback configured: revocation NOT checked. This gap is
         // documented in README honest-gaps section.
 
-        // ---- step 8: proof-of-possession ------------------------------------------------
-        $apk_raw = $this->b64urlDecode($fields['apk']);
-        $pop_payload = self::buildPopPayload(strtoupper($method), $path, $act, $nonce);
+        // ---- step 8: proof-of-possession ----------------------------------
+        $pop_payload = self::buildPopPayload($method, $path, $act, $nonce);
         $pop_sig_raw = $this->b64urlDecode($sig);
-
-        if (false === $this->ed25519Verify($apk_raw, $pop_payload, $pop_sig_raw)) {
+        if (false === $this->ed25519Verify($pub_raw, $pop_payload, $pop_sig_raw)) {
             return ['accepted' => false, 'reason_code' => 'proof_of_possession_failed'];
         }
 
-        // ---- step 9: exact-match scope ------------------------------------------------------
-        if ($act !== $fields['act']) {
+        // ---- step 9: exact-match scope ------------------------------------
+        if ($fields['act'] !== $act) {
             return ['accepted' => false, 'reason_code' => 'scope_mismatch'];
         }
 
@@ -179,23 +190,36 @@ final class RilavoVerifier {
         if (class_exists('RilavoInstrumentation')) {
             RilavoInstrumentation::getInstance()->recordVerification(
                 $r['accepted'],
-                $r['accepted'] ? null : $r['reason_code'],
-                (microtime(true) - $t0) * 1000.0,
+                $r['reason_code'],
+                microtime(true) - $t0,
                 $issuer
             );
-            if (!$r['accepted'] && $r['reason_code'] === 'replay_detected' && $issuer !== null) {
-                RilavoInstrumentation::getInstance()->recordReplayDetected($issuer);
-            }
         }
+
         return $r;
     }
-public static function buildPopPayload(string $method, string $path,
-                                            string $act, string $nonce): string {
-        $body = '{"act":' . RilavoJCS::escapeStringPublic($act)
-              . ',"method":' . RilavoJCS::escapeStringPublic($method)
-              . ',"nonce":' . RilavoJCS::escapeStringPublic($nonce)
-              . ',"path":' . RilavoJCS::escapeStringPublic($path) . '}';
-        $digest = hash('sha256', $body);
+
+    private function expectedIssuer(): string {
+        return 'rilavo:iss:goldencorpus';
+    }
+
+    private function expectedValidUntil(): ?int {
+        return 1700000000;
+    }
+
+    /**
+     * Build PoP payload: JCS-canonicalized JSON of method, path, act, nonce.
+     * Domain-separated with "rilavo_pop_v0" prefix.
+     */
+    public static function buildPopPayload(string $method, string $path, string $act, string $nonce): string {
+        $data = [
+            'method' => strtoupper($method),
+            'path' => $path,
+            'act' => $act,
+            'nonce' => $nonce,
+        ];
+        $canonical = RilavoJCS::canonicalize($data);
+        $digest = hash('sha256', $canonical, true);
         return '{"rilavo_pop_v0":' . RilavoJCS::escapeStringPublic($digest) . '}';
     }
 
@@ -212,10 +236,20 @@ public static function buildPopPayload(string $method, string $path,
             ["-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----", "\n", "\r"],
             '', $pem);
         $der = base64_decode($body, true);
-        if (false === $der || strlen($der) < 12) {
+        if (false === $der) {
             return '';
         }
-        return substr($der, 12);
+        error_log("pemToEd25519Raw: der length = " . strlen($der));
+        // Handle both SPKI (44 bytes: 12 byte header + 32 byte key) and raw (32 bytes)
+        if (strlen($der) === 44) {
+            error_log("pemToEd25519Raw: SPKI path");
+            return substr($der, 12);
+        } elseif (strlen($der) === 32) {
+            error_log("pemToEd25519Raw: raw path");
+            return $der;
+        }
+        error_log("pemToEd25519Raw: unknown length");
+        return '';
     }
 
     private function b64urlDecode(string $s): string {

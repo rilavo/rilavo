@@ -17,12 +17,12 @@ from __future__ import annotations
 
 import os
 import contextlib
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from contextvars import ContextVar
 
 # Optional imports - OpenTelemetry is a soft dependency
 OTEL_AVAILABLE = False
-try:
+if TYPE_CHECKING:
     from opentelemetry import trace
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
@@ -30,19 +30,29 @@ try:
     from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
     from opentelemetry.trace import SpanKind, Status, StatusCode
     from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
-    OTEL_AVAILABLE = True
-except ImportError:
-    trace = None
-    TracerProvider = None
-    BatchSpanProcessor = None
-    ConsoleSpanExporter = None
-    Resource = None
-    SERVICE_NAME = None
-    OTLPSpanExporter = None
-    SpanKind = None
-    Status = None
-    StatusCode = None
-    TraceIdRatioBased = None
+else:
+    try:
+        from opentelemetry import trace
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
+        from opentelemetry.sdk.resources import Resource, SERVICE_NAME
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+        from opentelemetry.trace import SpanKind, Status, StatusCode
+        from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
+        OTEL_AVAILABLE = True
+    except ImportError:
+        trace = None  # type: ignore[assignment]
+        TracerProvider = None  # type: ignore[assignment]
+        BatchSpanProcessor = None  # type: ignore[assignment]
+        ConsoleSpanExporter = None  # type: ignore[assignment]
+        Resource = None  # type: ignore[assignment]
+        SERVICE_NAME = None  # type: ignore[assignment]
+        OTLPSpanExporter = None  # type: ignore[assignment]
+        SpanKind = None  # type: ignore[assignment]
+        Status = None  # type: ignore[assignment]
+        StatusCode = None  # type: ignore[assignment]
+        TraceIdRatioBased = None  # type: ignore[assignment]
+
 
 # Current span context variable for manual span management
 _current_span: ContextVar[Optional["trace.Span"]] = ContextVar("_current_span", default=None)
@@ -91,7 +101,7 @@ def init_tracing(
     provider = TracerProvider(resource=resource)
 
     # Sampler
-    provider._sampler = TraceIdRatioBased(sampling_rate)
+    provider.sampler = TraceIdRatioBased(sampling_rate)  # type: ignore[attr-defined]
 
     # Exporter
     if endpoint:

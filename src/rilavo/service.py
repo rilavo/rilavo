@@ -212,7 +212,7 @@ class RilavoHandler(BaseHTTPRequestHandler):
         if not isinstance(requests_data, list):
             raise _BadRequest("requests must be an array")
         creds_out = []
-        statuses = []
+        statuses: list[dict[str, object]] = []
         for i, r in enumerate(requests_data):
             try:
                 apk_raw = base64.urlsafe_b64decode(
@@ -386,7 +386,7 @@ class RilavoService:
 
     @property
     def url(self) -> str:
-        return f"http://{self.host}:{self.port}"
+        return f"http://{str(self.host)}:{str(self.port)}"
 
     def start(self) -> "RilavoService":
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()

@@ -143,6 +143,7 @@ class CorrelationPolicy:
     def scope_subject(self, subject: str, audience: str) -> str:
         if not self.enabled:
             return subject                    # OFF: pass through untouched
+        assert self.secret_key is not None, "enabled policy requires a secret_key"
         return relationship_subject_id(self.secret_key, subject, audience)
 
 

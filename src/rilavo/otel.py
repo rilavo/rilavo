@@ -20,6 +20,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
 from opentelemetry.instrumentation.logging import LoggingInstrumentor
+from typing import Optional, Any
 
 # Semantic conventions for Rilavo
 RILAVO_SERVICE_NAME = "rilavo"
@@ -59,17 +60,17 @@ class RilavoInstrumentation:
 
         self._tracer_provider: Optional[TracerProvider] = None
         self._meter_provider: Optional[MeterProvider] = None
-        self._tracer = None
-        self._meter = None
+        self._tracer: Optional[trace.Tracer] = None
+        self._meter: Optional[metrics.Meter] = None
         self._initialized = False
 
         # Metric instruments (lazy initialization)
-        self._verification_duration = None
-        self._verification_result_counter = None
-        self._credential_issued_counter = None
-        self._replay_detected_counter = None
-        self._nonce_cache_size_gauge = None
-        self._issuer_directory_lookups_counter = None
+        self._verification_duration: Optional[Any] = None
+        self._verification_result_counter: Optional[Any] = None
+        self._credential_issued_counter: Optional[Any] = None
+        self._replay_detected_counter: Optional[Any] = None
+        self._nonce_cache_size_gauge: Optional[Any] = None
+        self._issuer_directory_lookups_counter: Optional[Any] = None
 
     def initialize(self) -> None:
         """Initialize OpenTelemetry instrumentation."""
@@ -93,7 +94,8 @@ class RilavoInstrumentation:
         self._tracer = trace.get_tracer(self.service_name, self.service_version)
 
         # Initialize metrics
-        readers = []
+        from opentelemetry.sdk.metrics.export import MetricReader
+        readers: list[MetricReader] = []
         if self.enable_prometheus:
             readers.append(PrometheusMetricReader())
 
@@ -160,6 +162,7 @@ class RilavoInstrumentation:
         """Get the tracer instance."""
         if not self._initialized:
             self.initialize()
+        assert self._tracer is not None
         return self._tracer
 
     @property
@@ -167,6 +170,7 @@ class RilavoInstrumentation:
         """Get the meter instance."""
         if not self._initialized:
             self.initialize()
+        assert self._meter is not None
         return self._meter
 
     @contextmanager
@@ -197,8 +201,8 @@ class RilavoInstrumentation:
         if not self._initialized:
             self.initialize()
 
-        attributes = {
-            VERIFICATION_ACCEPTED: accepted,
+        attributes: dict[str, str] = {
+            VERIFICATION_ACCEPTED: str(accepted).lower(),
         }
         if reason_code:
             attributes[VERIFICATION_REASON] = reason_code
@@ -216,7 +220,7 @@ class RilavoInstrumentation:
         if not self._initialized:
             self.initialize()
 
-        attributes = {
+        attributes: dict[str, str] = {
             CREDENTIAL_ISSUER: issuer,
             CREDENTIAL_AGENT: agent,
         }
@@ -229,7 +233,7 @@ class RilavoInstrumentation:
         if not self._initialized:
             self.initialize()
 
-        attributes = {}
+        attributes: dict[str, str] = {}
         if credential_issuer:
             attributes[CREDENTIAL_ISSUER] = credential_issuer
 
@@ -249,9 +253,9 @@ class RilavoInstrumentation:
         if not self._initialized:
             self.initialize()
 
-        attributes = {
+        attributes: dict[str, str] = {
             "issuer_id": issuer_id,
-            "found": found,
+            "found": str(found).lower(),
         }
 
         if self._issuer_directory_lookups_counter:

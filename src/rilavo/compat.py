@@ -78,6 +78,9 @@ def authenticate(
     """
     # --- Rilavo credential path (precedence: attempted first) --------------
     if credential is not None:
+        if pop_request is None:
+            return AuthResult(False, MECHANISM_RILAVO_CREDENTIAL,
+                              "missing_pop_request", None)
         try:
             result: VerifyResult = do_verify(
                 verifier_id=verifier_id,

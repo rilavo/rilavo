@@ -21,6 +21,8 @@ import threading
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import Optional
 
 METRIC_PREFIX = "rilavo"
 
@@ -46,32 +48,26 @@ class _DurationSeries:
         self.total_sum += value
 
     def prometheus_text(self) -> str:
-        """Export metrics in Prometheus text exposition format (v0.0.4)."""
+        """Export duration histogram in Prometheus text exposition format (v0.0.4)."""
         lines = []
-        with self._lock:
-            # Counters
-            for name, label_map in self._counters.items():
-                safe_name = name.replace(".", "_").replace("-", "_")
-                for label_key, value in label_map.items():
-                    if label_key:
-                        lines.append(f'{safe_name}{{{label_key}}} {value}')
-                    else:
-                        lines.append(f'{safe_name} {value}')
-
-            # Duration histogram
-            if self.durations.total_count > 0:
-                safe_name = "rilavo_verify_duration_seconds"
-                # Count per bucket
-                cumulative = 0
-                for i, bound in enumerate(self.durations.buckets):
-                    cumulative += self.durations.counts[i]
-                    le = str(bound) if bound != float("inf") else "+Inf"
-                    lines.append(f'{safe_name}_bucket{{le="{le}"}} {cumulative}')
-                lines.append(f'{safe_name}_bucket{{le="+Inf"}} {self.durations.total_count}')
-                lines.append(f'{safe_name}_count {self.durations.total_count}')
-                lines.append(f'{safe_name}_sum {self.durations.total_sum}')
-
+        safe_name = "rilavo_verify_duration_seconds"
+        lines.append(f"# HELP {safe_name} Verification latency.")
+        lines.append(f"# TYPE {safe_name} histogram")
+        if self.counts:
+            cumulative = 0
+            for bound, count in zip(self.buckets, self.counts):
+                cumulative += count
+                le = str(bound) if bound != float("inf") else "+Inf"
+                lines.append(f'{safe_name}_bucket{{le="{le}"}} {cumulative}')
+        else:
+            for bound in self.buckets:
+                le = str(bound) if bound != float("inf") else "+Inf"
+                lines.append(f'{safe_name}_bucket{{le="{le}"}} 0')
+        lines.append(f'{safe_name}_bucket{{le="+Inf"}} {self.total_count}')
+        lines.append(f'{safe_name}_sum {self.total_sum:.6f}')
+        lines.append(f'{safe_name}_count {self.total_count}')
         return "\n".join(lines) + "\n"
+
 
 
 class Metrics:
@@ -328,8 +324,8 @@ class MetricsServer:
         self.metrics = metrics
         self.host = host
         self.port = port
-        self._server = None
-        self._thread = None
+        self._server: Optional[HTTPServer] = None
+        self._thread: Optional[threading.Thread] = None
         self._running = False
 
     def start(self) -> None:
@@ -368,7 +364,7 @@ class MetricsServer:
                 super().server_bind()
 
         self._server = ReuseAddrHTTPServer((self.host, self.port), MetricsHandler)
-        self._server.metrics_collector = self.metrics
+        self._server.metrics_collector = self.metrics  # type: ignore[attr-defined]
 
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
         self._thread.start()

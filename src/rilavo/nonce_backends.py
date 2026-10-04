@@ -11,7 +11,10 @@ import hashlib
 import sqlite3
 import threading
 import time
-from typing import Protocol
+from typing import Protocol, TYPE_CHECKING
+if TYPE_CHECKING:
+    import redis
+    ConnectionPool = redis.ConnectionPool
 
 
 class NonceBackend(Protocol):
@@ -100,7 +103,7 @@ class RedisNonceBackend:
         self,
         url: str = "redis://localhost:6379/0",
         key_prefix: str = "rilavo:nonce:",
-        connection_pool: object | None = None,
+        connection_pool: "ConnectionPool | None" = None,
     ) -> None:
         self._key_prefix = key_prefix
         self._pool = connection_pool
@@ -112,6 +115,7 @@ class RedisNonceBackend:
     def _connect(self) -> None:
         try:
             import redis
+            from redis import ConnectionPool
             if self._pool is None:
                 self._pool = redis.ConnectionPool.from_url(
                     self._url,

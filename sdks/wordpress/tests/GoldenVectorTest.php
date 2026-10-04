@@ -17,8 +17,8 @@ class GoldenVectorTest extends TestCase
 
     protected function setUp(): void
     {
-        $goldenPath = __DIR__ . '/../../golden/golden.json';
-        $rejectsPath = __DIR__ . '/../../golden/rejects.json';
+        $goldenPath = __DIR__ . '/../golden/golden.json';
+        $rejectsPath = __DIR__ . '/../golden/rejects.json';
 
         if (!file_exists($goldenPath)) {
             $goldenPath = __DIR__ . '/../../../golden/golden.json';

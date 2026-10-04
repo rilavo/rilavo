@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
     define('ABSPATH', '/tmp/wp/');
 }
 
-require_once __DIR__ . '/class-rilavo-gate.php';
+// loaded via autoloader
 
 if (!class_exists('Rilavo\RilavoGate', false)) {
     class_alias('\\RilavoGate', 'Rilavo\RilavoGate');
