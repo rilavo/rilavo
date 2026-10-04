@@ -252,19 +252,16 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: .
-      - name: Check pyproject.toml version
+      - name: Check versions
         run: |
+          # Extract version from pyproject.toml
           VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "//' | sed 's/"//')
           echo "pyproject.toml version: $VERSION"
-      - name: Check Python package version
-        run: |
-          cd src/rilavo
-          PY_VERSION=$(grep '__version__' __init__.py | sed -E 's/.*= ["''']([^"''']+)["'''].*/\1/')
+          
+          # Extract version from __init__.py using Python (more reliable than sed)
+          PY_VERSION=$(cd src/rilavo && python3 -c "import re; content = open('__init__.py').read(); match = re.search(r'__version__\\s*=\\s*[\\"\']([^\\"\']+)[\\"']', content); print(match.group(1))")
           echo "Python package version: $PY_VERSION"
-      - name: Check versions match
-        run: |
-          VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "//' | sed 's/"//')
-          PY_VERSION=$(grep '__version__' src/rilavo/__init__.py | sed -E 's/.*= ["''']([^"''']+)["'''].*/\1/')
+          
           if [ "$VERSION" != "$PY_VERSION" ]; then
             echo "Version mismatch: pyproject.toml=$VERSION vs __init__.py=$PY_VERSION"
             exit 1
@@ -287,7 +284,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v3
       - name: Install twine
-        run: uv pip install twine
+        run: uv pip install --system twine
       - name: Build and validate
         run: |
           uv build
