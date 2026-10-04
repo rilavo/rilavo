@@ -3,11 +3,8 @@ Rilavo Shell Completion Generator
 Generates completion scripts for bash, zsh, fish, and powershell.
 """
 
-import argparse
-import sys
 import os
 from pathlib import Path
-
 
 BASH_COMPLETION = """# Rilavo bash completion
 _rilavo_completion() {
@@ -370,8 +367,7 @@ def generate_completion(shell: str) -> str:
 
 def install_completion(shell: str) -> bool:
     """Install completion for the current shell."""
-    import os
-    script = generate_completion(shell)
+    generate_completion(shell)
 
     if shell == "bash":
         dest = Path.home() / ".bash_completion.d" / "rilavo"

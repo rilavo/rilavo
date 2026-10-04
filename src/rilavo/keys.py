@@ -7,15 +7,14 @@ no padding. A public key is 32 raw bytes; a signature is 64 raw bytes.
 from __future__ import annotations
 
 import base64
-import secrets
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
 )
-from cryptography.hazmat.primitives import serialization
 
 from .canonical import canonicalize
 
@@ -77,7 +76,7 @@ class IssuerKeyEntry:
             return False
 
 
-FAR_FUTURE = datetime(9999, 1, 1, tzinfo=timezone.utc).timestamp()
+FAR_FUTURE = datetime(9999, 1, 1, tzinfo=UTC).timestamp()
 
 
 class KeyDirectory:
@@ -97,7 +96,7 @@ class KeyDirectory:
     def revoke_key(self, fingerprint_id: str, at: datetime | None = None) -> None:
         """Compromise response (Core Spec §4): publish retroactive cutoff."""
         entry = self._entries[fingerprint_id]
-        cutoff = (at or datetime.now(timezone.utc)).timestamp()
+        cutoff = (at or datetime.now(UTC)).timestamp()
         self._entries[fingerprint_id] = IssuerKeyEntry(
             entry.fingerprint_id, entry.public_key_pem, cutoff
         )

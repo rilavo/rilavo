@@ -15,30 +15,35 @@ Configuration via environment variables:
 
 from __future__ import annotations
 
-import os
 import contextlib
-from typing import Optional, TYPE_CHECKING
+import os
 from contextvars import ContextVar
+from typing import TYPE_CHECKING
 
 # Optional imports - OpenTelemetry is a soft dependency
 OTEL_AVAILABLE = False
 if TYPE_CHECKING:
     from opentelemetry import trace
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.resources import SERVICE_NAME, Resource
     from opentelemetry.sdk.trace import TracerProvider
     from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-    from opentelemetry.sdk.resources import Resource, SERVICE_NAME
-    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-    from opentelemetry.trace import SpanKind, Status, StatusCode
     from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
+    from opentelemetry.trace import SpanKind, Status, StatusCode
 else:
     try:
         from opentelemetry import trace
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+            OTLPSpanExporter,
+        )
+        from opentelemetry.sdk.resources import SERVICE_NAME, Resource
         from opentelemetry.sdk.trace import TracerProvider
-        from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExporter
-        from opentelemetry.sdk.resources import Resource, SERVICE_NAME
-        from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-        from opentelemetry.trace import SpanKind, Status, StatusCode
+        from opentelemetry.sdk.trace.export import (
+            BatchSpanProcessor,
+            ConsoleSpanExporter,
+        )
         from opentelemetry.sdk.trace.sampling import TraceIdRatioBased
+        from opentelemetry.trace import SpanKind, Status, StatusCode
         OTEL_AVAILABLE = True
     except ImportError:
         trace = None  # type: ignore[assignment]
@@ -55,18 +60,18 @@ else:
 
 
 # Current span context variable for manual span management
-_current_span: ContextVar[Optional["trace.Span"]] = ContextVar("_current_span", default=None)
+_current_span: ContextVar[trace.Span | None] = ContextVar("_current_span", default=None)
 
 # Module-level tracer
-_tracer: Optional["trace.Tracer"] = None
+_tracer: trace.Tracer | None = None
 _provider_initialized = False
 
 
 def init_tracing(
     service_name: str = "rilavo",
-    endpoint: Optional[str] = None,
+    endpoint: str | None = None,
     sampling_rate: float = 0.01,
-    resource_attributes: Optional[dict] = None,
+    resource_attributes: dict | None = None,
 ) -> bool:
     """Initialize OpenTelemetry tracing.
 
@@ -118,9 +123,9 @@ def init_tracing(
     return True
 
 
-def get_tracer() -> Optional["trace.Tracer"]:
+def get_tracer() -> trace.Tracer | None:
     """Get the module tracer, initializing if needed."""
-    global _tracer
+    global _tracer  # noqa: PLW0602
     if _tracer is None and OTEL_AVAILABLE:
         init_tracing()
     return _tracer
@@ -129,8 +134,8 @@ def get_tracer() -> Optional["trace.Tracer"]:
 @contextlib.contextmanager
 def start_span(
     name: str,
-    kind: Optional["SpanKind"] = None,
-    attributes: Optional[dict] = None,
+    kind: SpanKind | None = None,
+    attributes: dict | None = None,
 ):
     """Context manager for creating a span.
 
@@ -159,7 +164,7 @@ def start_span(
         _current_span.reset(token)
 
 
-def get_current_span() -> Optional["trace.Span"]:
+def get_current_span() -> trace.Span | None:
     """Get the current active span from context."""
     return _current_span.get()
 
@@ -172,7 +177,7 @@ def add_span_attributes(attributes: dict) -> None:
             span.set_attribute(k, v)
 
 
-def record_span_event(name: str, attributes: Optional[dict] = None) -> None:
+def record_span_event(name: str, attributes: dict | None = None) -> None:
     """Record an event on the current span."""
     span = get_current_span()
     if span:
@@ -265,7 +270,7 @@ def trace_pop_verification(action_class: str):
 
 # Integration helpers for metrics
 
-def trace_with_metrics(span_name: str, metrics_name: str, attributes: Optional[dict] = None):
+def trace_with_metrics(span_name: str, metrics_name: str, attributes: dict | None = None):
     """Decorator combining span + metrics timing."""
     def decorator(func):
         import functools

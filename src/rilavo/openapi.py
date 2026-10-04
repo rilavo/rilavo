@@ -4,28 +4,6 @@ from __future__ import annotations
 
 import json
 from typing import Any
-from datetime import datetime
-
-from .models.issue import (
-    IssueCredentialRequest,
-    IssueCredentialResponse,
-    BatchIssueRequest,
-    BatchIssueResponse,
-)
-from .models.verify import (
-    VerifyRequest,
-    VerifyResponse,
-)
-from .models.directory import (
-    DirectoryEntry,
-    DirectoryResponse,
-)
-from .models.errors import (
-    ErrorResponse,
-)
-from .models.discovery import (
-    DiscoveryResponse,
-)
 
 
 def generate_openapi_spec(
@@ -82,7 +60,6 @@ def _build_paths() -> dict:
                 "summary": "Issue a new credential",
                 "description": "Issues a new Rilavo credential for an agent. The credential is signed by the issuer and includes all authorization metadata.",
                 "operationId": "issueCredential",
-                "tags": ["Credentials"],
                 "requestBody": {
                     "required": True,
                     "content": {
@@ -328,8 +305,6 @@ def _build_components() -> dict:
             # Errors
             "ErrorResponse": _schema_ref("ErrorResponse"),
             "ErrorDetail": _schema_ref("ErrorDetail"),
-            # Discovery
-            "DiscoveryResponse": _schema_ref("DiscoveryResponse"),
             # Revoke
             "RevokeRequest": {
                 "type": "object",
@@ -400,6 +375,5 @@ def generate_openapi_json(
 
 if __name__ == "__main__":
     # Generate and print spec
-    import sys
     spec = generate_openapi_spec()
     print(json.dumps(spec, indent=2))

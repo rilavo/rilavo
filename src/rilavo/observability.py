@@ -22,7 +22,6 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from typing import Optional
 
 METRIC_PREFIX = "rilavo"
 
@@ -132,7 +131,7 @@ class Metrics:
                       f"# TYPE {total_name} counter"]
             for name, labels in sorted(self._counters.items()):
                 for label_key, value in sorted(labels.items()):
-                    metric = name.replace(f"{METRIC_PREFIX}_", "",
+                    name.replace(f"{METRIC_PREFIX}_", "",
                                           1) if name.startswith(
                         METRIC_PREFIX) else name
                     lines.append(f"{total_name}{{{label_key}}} {value}"
@@ -141,10 +140,8 @@ class Metrics:
             hist_name = f"{METRIC_PREFIX}_verify_duration_seconds"
             lines += [f"# HELP {hist_name} Verification latency.",
                       f"# TYPE {hist_name} histogram"]
-            cumulative = 0
             if d.counts:
                 for bound, c in zip(d.buckets, d.counts):
-                    cumulative = c
                     lines.append(f'{hist_name}_bucket{{le="{bound}"}} {c}')
             else:
                 for bound in d.buckets:
@@ -324,8 +321,8 @@ class MetricsServer:
         self.metrics = metrics
         self.host = host
         self.port = port
-        self._server: Optional[HTTPServer] = None
-        self._thread: Optional[threading.Thread] = None
+        self._server: HTTPServer | None = None
+        self._thread: threading.Thread | None = None
         self._running = False
 
     def start(self) -> None:
@@ -333,9 +330,9 @@ class MetricsServer:
         if self._running:
             return
 
-        from http.server import HTTPServer, BaseHTTPRequestHandler
-        import threading
         import socket
+        import threading
+        from http.server import HTTPServer
 
         class MetricsHandler(BaseHTTPRequestHandler):
             def do_GET(self):

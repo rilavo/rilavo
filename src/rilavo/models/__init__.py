@@ -1,29 +1,29 @@
 """Pydantic models for OpenAPI schema generation."""
 
+from .directory import *
+from .discovery import *
+from .errors import *
 from .issue import *
 from .verify import *
-from .directory import *
-from .errors import *
-from .discovery import *
 
 __all__ = [
-    # Issue
-    "IssueCredentialRequest",
-    "IssueCredentialResponse",
     "BatchIssueRequest",
     "BatchIssueResponse",
-    # Verify
-    "VerifyRequest",
-    "VerifyResponse",
     # Directory
     "DirectoryEntry",
     "DirectoryResponse",
+    # Discovery
+    "DiscoveryResponse",
+    "ErrorDetail",
+    # Errors
+    "ErrorResponse",
+    # Issue
+    "IssueCredentialRequest",
+    "IssueCredentialResponse",
     # Revoke
     "RevokeRequest",
     "RevokeResponse",
-    # Errors
-    "ErrorResponse",
-    "ErrorDetail",
-    # Discovery
-    "DiscoveryResponse",
+    # Verify
+    "VerifyRequest",
+    "VerifyResponse",
 ]

@@ -15,17 +15,17 @@ from __future__ import annotations
 
 import base64
 import hashlib
-import json
 import time
 from dataclasses import dataclass
 
 from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
     Ed25519PublicKey,
 )
-from cryptography.hazmat.primitives import serialization
-from .directory_signing import DirectorySigner, DirectoryPayload
+
+from .directory_signing import DirectoryPayload
 
 # Enrollment constraints (Open/parameterized -- not hardcoded policy)
 DEFAULT_MAX_ENROLLMENT_TTL_SECONDS = 7 * 86400       # 7 days
@@ -160,9 +160,8 @@ def is_renewal_due(valid_until_ts: float, within: int = 86400) -> bool:
 
 
 def _public_key_to_pem(key: Ed25519PublicKey) -> str:
-    from cryptography.hazmat.primitives.serialization import (
-        Encoding, PublicFormat)
-    der = key.public_bytes(
+    from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+    key.public_bytes(
         encoding=Encoding.Raw, format=PublicFormat.Raw)
     # Actually we want SPKI PEM format:
     spki_der = key.public_bytes(

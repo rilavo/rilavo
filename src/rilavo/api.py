@@ -18,14 +18,13 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey,
 )
 
-from .canonical import canonicalize
-from .credential import IssueRequest, Credential, issue
+from .credential import Credential, IssueRequest, issue
 from .errors import VerificationError
-from .keys import fingerprint, KeyDirectory, IssuerKeyEntry, FAR_FUTURE
-from .tracing import trace_verify_credential, trace_issue_credential, init_tracing
-from .pop import Request, sign_request
+from .keys import FAR_FUTURE, IssuerKeyEntry, KeyDirectory, fingerprint
+from .pop import Request
 from .receipts import ReceiptLog
-from .revocation import RevocationLog, REVOKED_BY_ISSUER, REVOKED_BY_PRINCIPAL
+from .revocation import RevocationLog
+from .tracing import trace_issue_credential, trace_verify_credential
 from .verifier import NonceCache, verify
 
 
@@ -142,6 +141,7 @@ def batch_issue(issuer: Issuer,
     NOT fail the whole batch -- per-request status is reported instead.
     """
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+
     from .keys import b64url_decode
 
     creds: list[Credential] = []

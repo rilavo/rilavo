@@ -9,7 +9,6 @@ scope by construction — credentials never carry floats.
 
 from __future__ import annotations
 
-import json
 from typing import Any
 
 # ECMAScript short escapes; everything else < 0x20 uses \u00xx lowercase hex.
@@ -55,7 +54,7 @@ def _serialize(value: Any) -> str:
             raise ValueError("integer outside RFC 8785 safe range")
         return str(value)
     if isinstance(value, float):
-        raise ValueError("floats are not representable in Rilavo credentials")
+        raise ValueError("floats are not representable in Rilavo credentials")  # noqa: TRY004
     if isinstance(value, list):
         return "[" + ",".join(_serialize(v) for v in value) + "]"
     if isinstance(value, dict):

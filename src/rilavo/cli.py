@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import socket
 import sys
 import sys as _sys
-import socket
 
 from . import __version__
 
@@ -95,9 +95,9 @@ def main(argv: list[str] | None = None) -> int:
 
 def cmd_keygen(args):
     """Generate Ed25519 keypair + directory entry."""
-    from .keys import generate_keypair
-    from .keys import b64url_encode, public_key_bytes
     from cryptography.hazmat.primitives import serialization
+
+    from .keys import generate_keypair
 
     priv, pub = generate_keypair()
     with open(args.out, "wb") as f:
@@ -116,7 +116,6 @@ def cmd_keygen(args):
     ).decode()
 
     import json
-    import time
     entry = {
         "issuer_id": issuer_id,
         "public_key_pem": pub_pem,
@@ -127,10 +126,12 @@ def cmd_keygen(args):
 
 def cmd_issue(args):
     """Issue a credential using the provided issuer private key."""
+    import json
+
+    from cryptography.hazmat.primitives import serialization
+
     from .api import Issuer, do_issue
     from .keys import Ed25519PublicKey, b64url_decode
-    from cryptography.hazmat.primitives import serialization
-    import json
 
     # Load issuer private key
     with open(args.key, "rb") as f:
@@ -159,7 +160,6 @@ def cmd_issue(args):
 def cmd_conformance(args):
     """Mechanical self-check against a target."""
     from .conformance_cli import main as conformance_main
-    import sys
     sys.argv = ["conformance", "--target", args.target]
     if args.json:
         sys.argv.append("--json")
@@ -168,7 +168,6 @@ def cmd_conformance(args):
 
 def cmd_explain(args):
     """Explain a rejection reason code."""
-    import sys
     from .errors import EXPLANATIONS
     if args.code in EXPLANATIONS:
         exp = EXPLANATIONS[args.code]
@@ -184,8 +183,9 @@ def cmd_explain(args):
 
 def cmd_init(args):
     """Scaffold a framework-specific integration."""
-    from .init_scaffold import scaffold
     from pathlib import Path
+
+    from .init_scaffold import scaffold
     scaffold(args.framework, Path(args.dir), project_name=args.project_name)
     print(f"Scaffolded {args.framework} project in {args.dir}")
 
@@ -214,9 +214,11 @@ def cmd_doctor(args):
 
 def cmd_openapi(args):
     """Generate OpenAPI 3.1 spec."""
-    from .openapi import generate_openapi_spec
-    import rilavo
     import json
+
+    import rilavo
+
+    from .openapi import generate_openapi_spec
     spec = generate_openapi_spec(
         version=rilavo.__version__,
         server_url="http://localhost:8090",
@@ -230,23 +232,20 @@ def cmd_openapi(args):
 
 def cmd_service(args):
     """Run the rilavo service with HTTP endpoints."""
-    import signal
-    import sys
-    import threading
-    import socket
-    from http.server import HTTPServer, BaseHTTPRequestHandler
-    from urllib.parse import urlparse
     import json
-    import base64
+    import signal
+    import threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+    from urllib.parse import urlparse
 
     from .api import Issuer, do_issue, do_verify
-    from .keys import KeyDirectory, Ed25519PublicKey, b64url_decode
     from .credential import Credential
+    from .keys import Ed25519PublicKey, KeyDirectory, b64url_decode
+    from .observability import get_metrics, start_metrics_server
     from .pop import Request
     from .revocation import RevocationLog
-    from .verifier import NonceCache
-    from .observability import get_metrics, start_metrics_server
     from .tracing import init_tracing
+    from .verifier import NonceCache
 
     # Initialize tracing once
     init_tracing(
@@ -274,7 +273,7 @@ def cmd_service(args):
 
     # Start metrics server
     metrics = get_metrics()
-    metrics_server = start_metrics_server(metrics, host=args.metrics_host, port=args.metrics_port)
+    start_metrics_server(metrics, host=args.metrics_host, port=args.metrics_port)
     print(f"Metrics server listening on http://{args.metrics_host}:{args.metrics_port}/metrics")
 
     class RilavoHandler:
@@ -436,10 +435,10 @@ def cmd_service(args):
 
     print(f"Rilavo service ready on http://0.0.0.0:{args.port}")
     print("Endpoints:")
-    print(f"  GET  /directory  - Key directory")
-    print(f"  POST /issue      - Issue credential")
-    print(f"  POST /verify     - Verify credential")
-    print(f"  GET  /healthz    - Health check")
+    print("  GET  /directory  - Key directory")
+    print("  POST /issue      - Issue credential")
+    print("  POST /verify     - Verify credential")
+    print("  GET  /healthz    - Health check")
     print(f"  GET  /metrics    - Prometheus metrics (port {args.metrics_port})")
     print("Press Ctrl+C to stop")
 

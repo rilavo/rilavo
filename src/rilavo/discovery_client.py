@@ -53,17 +53,15 @@ class DiscoveringKeyDirectory:
             return True
         try:
             doc = self._fetch()
-            ok, errors = validate_discovery_document(doc)
+            ok, _errors = validate_discovery_document(doc)
             if not ok:
                 return False
             self._cache = doc
             self._cached_at = now
             return True
-        except Exception:
+        except Exception:  # noqa: S110
             pass
-        if self.allow_stale_on_error and self._cache is not None:
-            return True
-        return False
+        return bool(self.allow_stale_on_error and self._cache is not None)
 
     def lookup(self, issuer_id: str):
         """KeyDirectory-compatible lookup."""

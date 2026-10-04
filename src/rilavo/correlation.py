@@ -23,7 +23,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 LABEL = ("INSTRUMENTATION -- measurement only; the P-13 correlation gap "
          "remains OPEN")
@@ -70,7 +70,7 @@ class CorrelationGapMonitor:
         self.records.append(IssuanceRecord(
             _hash_identifier(subject), _hash_identifier(agent), audience))
 
-    _FIELD_TO_ATTR = {"sub": "subject", "agt": "agent"}
+    _FIELD_TO_ATTR = {"sub": "subject", "agt": "agent"}  # noqa: RUF012
 
     def _collisions_for(self, attr: str) -> list[Collision]:
         record_attr = self._FIELD_TO_ATTR[attr]

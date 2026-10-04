@@ -15,11 +15,9 @@ never modifies credential fields or verifier logic.
 from __future__ import annotations
 
 import json
-import threading
-from typing import Any, Callable
+from collections.abc import Callable
 
 from .api import VerifyResult, do_verify
-from .compat import authenticate
 from .credential import Credential
 from .errors import VerificationError
 from .keys import KeyDirectory
@@ -127,8 +125,7 @@ class RilavoWSGIMiddleware:
         return self.app(environ, start_response)
 
 
-import json as _json_module
-json = _json_module
+# json is imported at top
 
 
 # --------------------------------------------------------------------------

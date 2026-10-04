@@ -14,26 +14,24 @@ infrastructure dependency (Core Spec section 8).
 
 from __future__ import annotations
 
-import json
 import base64
+import json
 import threading
 import time
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
 from .api import Issuer, VerifyResult, do_issue, do_verify
-from .credential import Credential, DEFAULT_MAX_TTL_SECONDS
-from .errors import VerificationError
-from .keys import KeyDirectory, b64url_encode, generate_keypair, public_key_bytes
+from .credential import DEFAULT_MAX_TTL_SECONDS, Credential
+from .keys import KeyDirectory
 from .pop import Request
 from .receipts import ReceiptLog
-from .revocation import RevocationLog, REVOKED_BY_ISSUER, REVOKED_BY_PRINCIPAL
+from .revocation import REVOKED_BY_ISSUER, REVOKED_BY_PRINCIPAL, RevocationLog
 from .verifier import NonceCache
-from .openapi import generate_openapi_spec
 
 
 @dataclass
@@ -104,8 +102,7 @@ class RilavoHandler(BaseHTTPRequestHandler):
 
     # -- routes ---------------------------------------------------------
 
-    def do_GET(self) -> None:  # noqa: N802
-        from urllib.parse import urlparse
+    def do_GET(self) -> None:
         parsed = urlparse(self.path)
         path = parsed.path
 
@@ -128,8 +125,9 @@ class RilavoHandler(BaseHTTPRequestHandler):
             self._send_json(200, {"status": "ok"})
         # OpenAPI endpoints
         elif path == "/openapi.json":
-            from .openapi import generate_openapi_spec
             import rilavo
+
+            from .openapi import generate_openapi_spec
             spec = generate_openapi_spec(
                 version=rilavo.__version__,
                 server_url=f"http://{self.headers.get('Host', 'localhost:8090')}",
@@ -155,7 +153,7 @@ class RilavoHandler(BaseHTTPRequestHandler):
             }],
         }
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         try:
             body = self._read_json()
         except _BadRequest as exc:
@@ -207,7 +205,6 @@ class RilavoHandler(BaseHTTPRequestHandler):
         self._send_json(201, json.loads(cred.to_json()))
 
     def _handle_batch_issue(self, body: dict) -> None:
-        from .api import batch_issue as _bi, IssueRequest
         requests_data = body.get("requests", [])
         if not isinstance(requests_data, list):
             raise _BadRequest("requests must be an array")
@@ -270,7 +267,7 @@ class RilavoHandler(BaseHTTPRequestHandler):
                 sink.record_count("rilavo_verifications_total",
                                   {"reason": result.reason_code})
                 sink.record_duration("rilavo_verify_duration_seconds", dt)
-            except Exception:
+            except Exception:  # noqa: S110
                 pass                    # telemetry must never alter outcomes
         self._send_json(200, {"accepted": result.accepted,
                               "reason_code": result.reason_code})
@@ -281,7 +278,7 @@ class RilavoHandler(BaseHTTPRequestHandler):
         if not nonce or revoked_by not in (REVOKED_BY_ISSUER, REVOKED_BY_PRINCIPAL):
             raise _BadRequest("invalid_revoke_request")
         with self.state.lock:
-            entry = self.state.revocations.append(
+            self.state.revocations.append(
                 str(nonce), revoked_by=revoked_by,
                 reason_code=str(body.get("reason_code", "unspecified")))
         self._send_json(200, {"revoked": True,
@@ -386,9 +383,9 @@ class RilavoService:
 
     @property
     def url(self) -> str:
-        return f"http://{str(self.host)}:{str(self.port)}"
+        return f"http://{self.host!s}:{self.port!s}"
 
-    def start(self) -> "RilavoService":
+    def start(self) -> RilavoService:
         threading.Thread(target=self.httpd.serve_forever, daemon=True).start()
         return self
 
@@ -399,8 +396,8 @@ class RilavoService:
 
 # -- tiny stdlib client used by tests and the pilot harness --------------
 
-import urllib.request
 import urllib.error
+import urllib.request
 
 
 def post(base_url: str, path: str, payload: dict) -> tuple[int, dict]:

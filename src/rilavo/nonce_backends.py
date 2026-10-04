@@ -11,7 +11,8 @@ import hashlib
 import sqlite3
 import threading
 import time
-from typing import Protocol, TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
+
 if TYPE_CHECKING:
     import redis
     ConnectionPool = redis.ConnectionPool
@@ -103,7 +104,7 @@ class RedisNonceBackend:
         self,
         url: str = "redis://localhost:6379/0",
         key_prefix: str = "rilavo:nonce:",
-        connection_pool: "ConnectionPool | None" = None,
+        connection_pool: ConnectionPool | None = None,
     ) -> None:
         self._key_prefix = key_prefix
         self._pool = connection_pool
@@ -115,7 +116,6 @@ class RedisNonceBackend:
     def _connect(self) -> None:
         try:
             import redis
-            from redis import ConnectionPool
             if self._pool is None:
                 self._pool = redis.ConnectionPool.from_url(
                     self._url,
@@ -140,16 +140,14 @@ class RedisNonceBackend:
         if self._use_fallback:
             return self._local_fallback.seen_before(nonce, window_seconds, now)
 
-        current = now if now is not None else time.time()
+        now if now is not None else time.time()
         key = self._nonce_key(nonce)
 
         try:
             # Atomic check-and-set: SET key value EX expiry NX (only if not exists)
             # Returns True if key was set (first time), False if key already exists (replay)
             result = self._client.set(key, "1", ex=window_seconds, nx=True)
-            if result:
-                return False  # First time seeing this nonce
-            return True  # Nonce already exists (replay detected)
+            return not result  # True if first time (no replay), False if replay detected
         except Exception:
             # On any Redis error, fail-open to local fallback
             self._use_fallback = True

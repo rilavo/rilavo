@@ -1,18 +1,16 @@
 """Rilavo doctor: end-to-end install health check."""
 from __future__ import annotations
-import sys
-from typing import List, Tuple
 
 from . import __version__ as rilavo_version
 
 
-def check_on_path(cmd: str) -> Tuple[bool, str]:
+def check_on_path(cmd: str) -> tuple[bool, str]:
     import shutil
     path = shutil.which(cmd)
     return (path is not None, f"{cmd} on PATH" if path else f"{cmd} NOT on PATH")
 
 
-def check_import(module: str) -> Tuple[bool, str]:
+def check_import(module: str) -> tuple[bool, str]:
     try:
         __import__(module)
         return True, f"import {module}: OK"
@@ -20,7 +18,7 @@ def check_import(module: str) -> Tuple[bool, str]:
         return False, f"import {module}: FAILED ({e})"
 
 
-def check_smoke() -> Tuple[bool, str]:
+def check_smoke() -> tuple[bool, str]:
     try:
         from .smoke import run_smoke
         ok, _ = run_smoke(verbose=False)
@@ -29,13 +27,13 @@ def check_smoke() -> Tuple[bool, str]:
         return False, f"rilavo smoke: ERROR ({e})"
 
 
-def check_online_verifier() -> Tuple[bool, str]:
+def check_online_verifier() -> tuple[bool, str]:
     # Optional: try to reach a public verifier endpoint if configured
     # For now, this is a placeholder — real implementation would hit a known verifier
     return True, "online check: SKIPPED (no endpoint configured)"
 
 
-def check_redis_nonce_cache() -> Tuple[bool, str]:
+def check_redis_nonce_cache() -> tuple[bool, str]:
     """Check Redis nonce cache connectivity if configured.
     Returns (True, "SKIPPED") if not configured, otherwise checks connectivity."""
     import os
@@ -52,7 +50,7 @@ def check_redis_nonce_cache() -> Tuple[bool, str]:
         return False, f"Redis nonce cache: FAILED ({e})"
 
 
-def check_issuer_directory() -> Tuple[bool, str]:
+def check_issuer_directory() -> tuple[bool, str]:
     """Check issuer directory connectivity if configured.
     Returns (True, "SKIPPED") if not configured, otherwise checks connectivity."""
     import os
@@ -70,7 +68,7 @@ def check_issuer_directory() -> Tuple[bool, str]:
         return False, f"Issuer directory: FAILED ({e})"
 
 
-def check_revocation_log() -> Tuple[bool, str]:
+def check_revocation_log() -> tuple[bool, str]:
     """Check revocation log connectivity if configured.
     Returns (True, "SKIPPED") if not configured, otherwise checks connectivity."""
     import os
@@ -89,8 +87,8 @@ def check_revocation_log() -> Tuple[bool, str]:
 
 
 
-def run_doctor(online: bool = False) -> Tuple[bool, List[str]]:
-    results: List[Tuple[bool, str]] = []
+def run_doctor(online: bool = False) -> tuple[bool, list[str]]:
+    results: list[tuple[bool, str]] = []
     results.append(check_on_path("rilavo"))
     results.append(check_import("rilavo"))
     results.append(check_import("rilavo.smoke"))

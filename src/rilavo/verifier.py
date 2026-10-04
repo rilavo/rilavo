@@ -8,11 +8,7 @@ from __future__ import annotations
 
 import time
 
-from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-
-from .canonical import canonicalize
-from .credential import REQUIRED_FIELDS, Credential, SUPPORTED_CREDENTIAL_VERSION
+from .credential import SUPPORTED_CREDENTIAL_VERSION, Credential
 from .errors import (
     AUDIENCE_MISMATCH,
     EXPIRED,
@@ -24,12 +20,12 @@ from .errors import (
     REVOCATION_STATE_UNAVAILABLE,
     REVOKED,
     SCOPE_MISMATCH,
-    UNRECOGNIZED_VERSION,
     UNKNOWN_ISSUER,
+    UNRECOGNIZED_VERSION,
     VerificationError,
 )
-from .otel import get_instrumentation, record_verification, record_replay_detected
-from .keys import IssuerKeyEntry, KeyDirectory, b64url_decode
+from .keys import IssuerKeyEntry, KeyDirectory
+from .otel import record_replay_detected, record_verification
 from .pop import Request, verify_request_signature
 from .receipts import ReceiptLog
 from .revocation import RevocationLog

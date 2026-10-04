@@ -1,8 +1,8 @@
 """Pydantic models for credential issuance."""
 
-from typing import Optional, Literal
+from typing import Annotated
+
 from pydantic import BaseModel, Field, field_validator
-from typing_extensions import Annotated
 
 
 class IssueCredentialRequest(BaseModel):
@@ -33,13 +33,13 @@ class IssueCredentialRequest(BaseModel):
         min_length=1,
         max_length=256,
     )]
-    ttl_seconds: Annotated[Optional[int], Field(
+    ttl_seconds: Annotated[int | None, Field(
         default=3600,
         ge=60,
         le=86400,
         description="Time-to-live in seconds (60-86400)",
     )] = 3600
-    context: Annotated[Optional[str], Field(
+    context: Annotated[str | None, Field(
         default=None,
         max_length=1024,
         description="Optional context data",
@@ -74,7 +74,7 @@ class CredentialFields(BaseModel):
     exp: int = Field(description="Expires at (Unix timestamp)")
     nonce: str = Field(description="Issuance nonce")
     sig: str = Field(description="Issuer signature (base64url)")
-    ver: Optional[int] = Field(default=None, description="Credential version (v0 omitted)")
+    ver: int | None = Field(default=None, description="Credential version (v0 omitted)")
 
 
 class IssueCredentialResponse(BaseModel):
@@ -98,8 +98,8 @@ class BatchIssueStatus(BaseModel):
 
     index: int = Field(description="Request index")
     success: bool = Field(description="Whether issuance succeeded")
-    fields: Optional[CredentialFields] = Field(default=None, description="Issued credential (if successful)")
-    error: Optional[str] = Field(default=None, description="Error message (if failed)")
+    fields: CredentialFields | None = Field(default=None, description="Issued credential (if successful)")
+    error: str | None = Field(default=None, description="Error message (if failed)")
 
 
 class BatchIssueResponse(BaseModel):

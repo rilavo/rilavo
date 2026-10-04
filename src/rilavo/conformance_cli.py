@@ -79,7 +79,6 @@ def _post(base: str, path: str, payload: dict) -> tuple[int, dict]:
 
 
 def _b64(pub_bytes: bytes) -> str:
-    import base64
     return base64.urlsafe_b64encode(pub_bytes).decode().rstrip("=")
 
 
@@ -113,7 +112,7 @@ def check_roundtrip_accept(ctx) -> CheckResult:
     if status != 201:
         return CheckResult("roundtrip_accept", "issue -> verify accept",
                            False, f"issue HTTP {status}: {body}")
-    cred = body["credential"] if "credential" in body else body
+    cred = body.get("credential", body)
     sig, nonce = _sign(ctx["agent_priv"], "POST", "/x", "data.read")
     vstatus, vbody = ctx["post"]("/verify", {
         "credential": cred,
@@ -136,7 +135,7 @@ def check_wrong_audience_rejected(ctx) -> CheckResult:
                            "credentials", None, f"could not stage: HTTP {status}")
     sig, nonce = _sign(ctx["agent_priv"], "POST", "/x", "data.read")
     vstatus, vbody = ctx["post"]("/verify", {
-        "credential": body["credential"] if "credential" in body else body,
+        "credential": body.get("credential", body),
         "request": {"method": "POST", "path": "/x",
                     "requested_action": "data.read",
                     "signature": sig, "request_nonce": nonce}})
@@ -147,7 +146,7 @@ def check_wrong_audience_rejected(ctx) -> CheckResult:
 
 
 def check_tampered_credential_rejected(ctx) -> CheckResult:
-    status, body = ctx["post"]("/issue", {
+    _status, body = ctx["post"]("/issue", {
         "principal": "p", "agent": "a",
         "agent_public_key": ctx["agent_pub_b64"],
         "action_class": "data.read", "audience": ctx["audience"]})
@@ -156,7 +155,7 @@ def check_tampered_credential_rejected(ctx) -> CheckResult:
     tampered["sig"] = ("AAAA" if not tampered["sig"].startswith("AAAA")
                        else "BBBB") + tampered["sig"][4:]
     sig, nonce = _sign(ctx["agent_priv"], "POST", "/x", "data.read")
-    vstatus, vbody = ctx["post"]("/verify", {
+    _vstatus, vbody = ctx["post"]("/verify", {
         "credential": tampered,
         "request": {"method": "POST", "path": "/x",
                     "requested_action": "data.read",
@@ -169,13 +168,13 @@ def check_tampered_credential_rejected(ctx) -> CheckResult:
 
 def check_scope_mismatch_rejected(ctx) -> CheckResult:
     """Properly signed request for an action the credential does not carry."""
-    status, body = ctx["post"]("/issue", {
+    _status, body = ctx["post"]("/issue", {
         "principal": "p", "agent": "a",
         "agent_public_key": ctx["agent_pub_b64"],
         "action_class": "data.read", "audience": ctx["audience"]})
     cred = body.get("credential", body)
     sig, nonce = _sign(ctx["agent_priv"], "POST", "/x", "payments.refund")
-    vstatus, vbody = ctx["post"]("/verify", {
+    _vstatus, vbody = ctx["post"]("/verify", {
         "credential": cred,
         "request": {"method": "POST", "path": "/x",
                     "requested_action": "payments.refund",
@@ -187,7 +186,7 @@ def check_scope_mismatch_rejected(ctx) -> CheckResult:
 
 
 def check_replay_rejected(ctx) -> CheckResult:
-    status, body = ctx["post"]("/issue", {
+    _status, body = ctx["post"]("/issue", {
         "principal": "p", "agent": "a",
         "agent_public_key": ctx["agent_pub_b64"],
         "action_class": "data.read", "audience": ctx["audience"]})
@@ -196,8 +195,8 @@ def check_replay_rejected(ctx) -> CheckResult:
     req = {"credential": cred, "request": {
         "method": "POST", "path": "/x", "requested_action": "data.read",
         "signature": sig, "request_nonce": nonce}}
-    s1, b1 = ctx["post"]("/verify", req)
-    s2, b2 = ctx["post"]("/verify", req)
+    _s1, b1 = ctx["post"]("/verify", req)
+    _s2, b2 = ctx["post"]("/verify", req)
     # fresh credential for the second presentation would be normal client
     # behavior; replaying the SAME one must be caught:
     ok = b1.get("accepted") is True and b2.get("accepted") is False          and b2.get("reason_code") == "replay_detected"
@@ -239,7 +238,7 @@ def run_http_checks(base_url: str) -> ConformanceReport:
            "agent_priv": agent_priv,
            "agent_pub_b64": _b64(public_key_bytes(agent_pub)),
            "audience": None}
-    status, entry = target_get("/directory")
+    _status, entry = target_get("/directory")
     ctx["audience"] = entry.get("verifier_id", "verifier:unknown")
 
     for check_id, title, fn in HTTP_CHECKS:
@@ -258,6 +257,8 @@ from .credential import Credential
 from .errors import VerificationError
 from .keys import b64url_decode
 from .pop import Request
+
+
 def _local_issue(payload, kit):
     cred = do_issue(kit.issuer, principal=payload["principal"],
                     agent=payload["agent"],
@@ -286,18 +287,13 @@ def _local_verify(payload, kit, verifier_id, nonce_cache):
 
 def _decode_pub(b64_str):
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-    from .keys import b64url_decode
     return Ed25519PublicKey.from_public_bytes(b64url_decode(b64_str))
 
 
 def run_local_checks() -> ConformanceReport:
     """In-process checks against the offline kit (no network)."""
-    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-    from .api import do_issue, do_verify
-    from .errors import VerificationError
-    from .keys import KeyDirectory, b64url_decode, public_key_bytes
-    from .pop import Request, sign_request
-    from .testing import offline_test_kit, local_test_agent
+    from .keys import public_key_bytes
+    from .testing import local_test_agent, offline_test_kit
     from .verifier import NonceCache
 
     report = ConformanceReport(target="local")
@@ -320,7 +316,6 @@ def run_local_checks() -> ConformanceReport:
            "agent_priv": agent_priv, "agent_pub_b64": pub_b64,
            "audience": V}
 
-    d = check_directory.__wrapped__ if False else None
     status_ok = kit.key_directory.lookup(kit.issuer.issuer_id) is not None
     report.results.append(CheckResult(
         "directory", "key-directory entry well-formed", status_ok, ""))
@@ -337,9 +332,7 @@ def run_local_checks() -> ConformanceReport:
 
 
 def _decode(pub_b64: str):
-    import base64 as _b64mod
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-    from .keys import b64url_decode
     return Ed25519PublicKey.from_public_bytes(b64url_decode(pub_b64))
 
 

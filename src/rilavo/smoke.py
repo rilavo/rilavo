@@ -1,10 +1,9 @@
 """End-to-end smoke test: issue, verify, and reject in-process."""
 from __future__ import annotations
-from typing import List, Tuple
 
 
-def run_smoke(verbose: bool = True) -> Tuple[bool, List[str]]:
-    steps: List[str] = []
+def run_smoke(verbose: bool = True) -> tuple[bool, list[str]]:
+    steps: list[str] = []
     ok = True
 
     def _check(cond: bool) -> None:
@@ -16,13 +15,13 @@ def run_smoke(verbose: bool = True) -> Tuple[bool, List[str]]:
         from cryptography.hazmat.primitives.asymmetric.ed25519 import (
             Ed25519PrivateKey,
         )
+
         from .api import Issuer, do_issue, do_verify
-        from .keys import KeyDirectory, b64url_encode as b64e
-        from .keys import public_key_bytes as pkb
+        from .credential import Credential
+        from .keys import KeyDirectory
         from .pop import Request, sign_request
         from .revocation import RevocationLog
         from .verifier import NonceCache
-        from .credential import Credential
 
         issuer_priv = Ed25519PrivateKey.generate()
         agent_priv = Ed25519PrivateKey.generate()
