@@ -1,7 +1,7 @@
 # MkDocs Documentation Dependencies
 mkdocs-material>=9.5
 mkdocstrings[python]>=0.26
-mkdocs-minify-plugin>=0.7
+mkdocs-minify-plugin>=0.8.0
 mkdocs-git-revision-date-localized-plugin>=1.2
 mkdocs-git-authors-plugin>=0.7
 mkdocs-mermaid2-plugin>=1.1
