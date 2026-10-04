@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          # cache: 'pip'  # Disabled - we use uv for package management'
+          # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
         uses: astral-sh/setup-uv@v3
       - name: Install dependencies
@@ -49,8 +49,6 @@ jobs:
         run: uv pip install mypy
       - name: Type check (mypy)
         run: uv run mypy src/rilavo --ignore-missing-imports
-      - name: Install ruff
-        run: uv pip install ruff
       - name: Lint (ruff)
         run: uv run ruff check src/rilavo tests/
 
@@ -168,11 +166,8 @@ jobs:
         run: composer validate --strict
       - name: Install dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
-      - name: Run PHPUnit tests (Golden Vector only)
-        run: vendor/bin/phpunit --filter GoldenVector --testdox
-      - name: Run PHPUnit tests (Integration - optional)
-        run: vendor/bin/phpunit --filter Integration --testdox || true
-        continue-on-error: true
+      - name: Run PHPUnit tests
+        run: vendor/bin/phpunit --testdox
 
   # Installation Tests
   install-tests:
@@ -200,7 +195,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          # cache: 'pip'  # Disabled - we use uv for package management'
+          # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
         uses: astral-sh/setup-uv@v3
       - name: Install dependencies
@@ -231,7 +226,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          # cache: 'pip'  # Disabled - we use uv for package management'
+          # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
         uses: astral-sh/setup-uv@v3
       - name: Install dependencies
@@ -259,7 +254,13 @@ jobs:
           echo "pyproject.toml version: $VERSION"
           
           # Extract version from __init__.py using Python (more reliable than sed)
-          PY_VERSION=$(cd src/rilavo && python3 -c "import re; content = open('__init__.py').read(); match = re.search(r'__version__\\s*=\\s*[\\"\']([^\\"\']+)[\\"']', content); print(match.group(1))")
+          PY_VERSION=$(cd src/rilavo && python3 << 'EOF'
+import re
+content = open('__init__.py').read()
+match = re.search(r'__version__\s*=\s*["']([^"']+)["']', content)
+print(match.group(1))
+EOF
+)
           echo "Python package version: $PY_VERSION"
           
           if [ "$VERSION" != "$PY_VERSION" ]; then
@@ -280,7 +281,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-          # cache: 'pip'  # Disabled - we use uv for package management'
+          # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
         uses: astral-sh/setup-uv@v3
       - name: Install twine
@@ -310,13 +311,6 @@ jobs:
             fi
           done
           echo "All README links valid"
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          # cache: 'pip'  # Disabled - we use uv for package management
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
 
   summary:
     name: Summary
@@ -328,4 +322,3 @@ jobs:
         run: |
           echo "All CI checks completed"
           # GitHub Actions handles the overall status automatically
-
