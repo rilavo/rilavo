@@ -31,7 +31,7 @@ jobs:
           # cache: 'pip'  # Disabled - we use uv for package management
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
 
       - name: Install Python dependencies (protocol)
         run: uv sync --all-extras
@@ -123,7 +123,7 @@ jobs:
           # cache: 'pip'  # Disabled - we use uv for package management
           cache-dependency-path: '**/uv.lock'
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
       - name: Install dependencies
         run: uv sync --all-extras
       - name: Run local conformance
@@ -160,7 +160,7 @@ jobs:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
       - name: Install dependencies
         run: uv sync --all-extras
       - name: Generate golden vectors

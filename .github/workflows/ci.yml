@@ -40,7 +40,7 @@ jobs:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
       - name: Install dependencies
         run: uv sync --all-extras
       - name: Run tests
@@ -197,7 +197,7 @@ jobs:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
       - name: Install dependencies
         run: uv sync --all-extras
       - name: Build package
@@ -228,7 +228,7 @@ jobs:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
       - name: Install dependencies
         run: uv sync --all-extras
       - name: Run smoke test
@@ -277,7 +277,7 @@ jobs:
           python-version: '3.11'
           # cache: 'pip'  # Disabled - we use uv for package management
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
       - name: Install twine
         run: uv pip install --system twine
       - name: Build and validate
