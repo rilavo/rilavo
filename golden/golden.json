@@ -25,10 +25,7 @@
   "agent_pub_b64url": "3eO8zsfzpmoRFfRdcg9NwTXDrnxOItyjj9se_WpJX_g",
   "pop_sig": {
     "sig_b64url": "LdGw6f0kFlgH080pBjhysrh9GH49yNah-aUKnKsX5wSXTQTab97jmPal0Lx9rGP_mZkT2d3uy5G90NQ0oobCDg",
-    "nonce": "corpus-nonce",
-    "method": "GET",
-    "path": "/data/1",
-    "act": "data.read"
+    "nonce": "corpus-nonce"
   },
   "credential_fields": {
     "iss": "rilavo:iss:goldencorpus",

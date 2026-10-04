@@ -12,7 +12,7 @@ from rilavo.discovery import (
     golden_multi,
 )
 
-DOCS = Path(__file__).resolve().parents[2] / "docs"
+DOCS = Path(__file__).resolve().parents[1] / "docs"
 
 
 def test_golden_minimal_valid():

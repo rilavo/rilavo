@@ -22,13 +22,13 @@ traceability documents cannot silently drift from the code they cite.
 import re
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 PROTOCOL_ROOT = REPO_ROOT / "rilavo-protocol"
 SUMMARY = REPO_ROOT / "docs" / "threat_model_summary.md"
 THREAT_DOC = REPO_ROOT / "docs" / "wave_2" / "22_SECURITY_THREAT_MODEL.md"
 PROTO_SECURITY = PROTOCOL_ROOT / "SECURITY.md"
 TOP_SECURITY = REPO_ROOT / "SECURITY.md"
-TEST_DIRS = [PROTOCOL_ROOT / "tests", REPO_ROOT / "rilavo-enterprise" / "tests"]
+TEST_DIRS = [REPO_ROOT / "tests", PROTOCOL_ROOT / "tests", REPO_ROOT / "rilavo-enterprise" / "tests"]
 
 
 def _all_test_defs():

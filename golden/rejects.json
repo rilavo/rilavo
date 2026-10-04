@@ -11,14 +11,7 @@
       "exp": 1700003600,
       "nonce": "goldencorpus-nonce-fixed",
       "sig": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg",
-      "ver": 9,
-      "pop_sig": {
-        "method": "GET",
-        "path": "/data/1",
-        "act": "data.read",
-        "sig_b64url": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg",
-        "nonce": "goldencorpus-nonce-fixed"
-      }
+      "ver": 9
     },
     "expected_reason": "unrecognized_version"
   },
@@ -33,14 +26,7 @@
       "iat": 1700000000,
       "exp": 1700003600,
       "nonce": "goldencorpus-nonce-fixed",
-      "sig": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg",
-      "pop_sig": {
-        "method": "GET",
-        "path": "/data/1",
-        "act": "data.read",
-        "sig_b64url": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg",
-        "nonce": "goldencorpus-nonce-fixed"
-      }
+      "sig": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg"
     },
     "expected_reason": "audience_mismatch"
   },
@@ -55,14 +41,7 @@
       "iat": 1700000000,
       "exp": 1000000000,
       "nonce": "goldencorpus-nonce-fixed",
-      "sig": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg",
-      "pop_sig": {
-        "method": "GET",
-        "path": "/data/1",
-        "act": "data.read",
-        "sig_b64url": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg",
-        "nonce": "goldencorpus-nonce-fixed"
-      }
+      "sig": "QJbhF5xVMU6LgucEFnnY3kpkopiOWUkoSV0Ek9K1Db_LEoL_l-AArknar57cRGOOiqOIgHUa_Wd9Jvw7PUblAg"
     },
     "expected_reason": "expired"
   }
