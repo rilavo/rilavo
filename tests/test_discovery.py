@@ -6,10 +6,8 @@ import json
 from pathlib import Path
 
 from rilavo.discovery import (
-    validate_discovery_document,
     parse_discovery_document,
-    golden_minimal,
-    golden_multi,
+    validate_discovery_document,
 )
 
 DOCS = Path(__file__).resolve().parents[1] / "docs"

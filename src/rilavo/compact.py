@@ -14,8 +14,7 @@ receiving end (fail-closed on unknown fingerprints).
 """
 
 import hashlib
-import struct
-from typing import Callable
+from collections.abc import Callable
 
 VERSION_TAG = 0xC0
 
@@ -104,7 +103,6 @@ def from_compact(data: bytes, resolve_issuer: Callable,
     # Array header:
     ah = data[offset]; offset += 1
     count = ah & 0x1F
-    from typing import Tuple
     items: list[bytes | int] = []
     for _ in range(count):
         major = data[offset] >> 5

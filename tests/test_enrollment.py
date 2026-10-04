@@ -1,25 +1,21 @@
 """P3-A3/B enrollment protocol tests."""
-import hashlib
 import time
 
-import pytest
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PrivateKey,
-    Ed25519PublicKey,
 )
 from cryptography.hazmat.primitives.serialization import (
     Encoding,
     PublicFormat,
 )
 
+from rilavo.directory_signing import DirectorySigner
 from rilavo.enrollment import (
-    EnrollmentRequest,
     EnrollmentAuthority,
+    is_renewal_due,
     proof_of_possession,
     verify_enrollment_proof,
-    is_renewal_due,
 )
-from rilavo.directory_signing import DirectorySigner, DirectoryPayload
 
 
 def _make_key(seed=1):
@@ -32,7 +28,6 @@ def _pub_raw(key):
 
 
 # Import Encoding/PublicFormat at module level:
-from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 
 NOW = int(time.time())
@@ -81,7 +76,6 @@ class TestEnrollmentProof:
 class TestEnrollmentAuthority:
 
     def test_process_enrollment_issues_signed_entry(self):
-        from rilavo.directory_signing import DirectorySigner
 
         signer = DirectorySigner()
         authority = EnrollmentAuthority(signer)

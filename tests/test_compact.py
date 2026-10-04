@@ -1,11 +1,9 @@
 """Compact encoding tests (PROPOSAL -- wire format UNCHANGED)."""
 import pytest
 
-from rilavo.credential import Credential, DEFAULT_MAX_TTL_SECONDS
-from rilavo.compact import to_compact, from_compact, VERSION_TAG
-from rilavo.testing import offline_test_kit, local_test_agent
-from rilavo.keys import b64url_encode, public_key_bytes
-
+from rilavo.compact import VERSION_TAG, from_compact, to_compact
+from rilavo.keys import b64url_encode
+from rilavo.testing import local_test_agent, offline_test_kit
 
 V = "verifier:compact.example"
 

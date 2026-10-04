@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-import json
-import time as time_mod
-
 import pytest
 
 from rilavo.discovery_client import DiscoveringKeyDirectory

@@ -8,16 +8,18 @@ step of the section-6 reference verification algorithm. If a field changes
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 
 from rilavo.api import Issuer, do_issue, do_verify
 from rilavo.canonical import canonicalize
 from rilavo.credential import (
-    Credential,
     DEFAULT_MAX_TTL_SECONDS,
+    Credential,
     IssueRequest,
+)
+from rilavo.credential import (
     issue as raw_issue,
 )
 from rilavo.errors import (
@@ -37,7 +39,7 @@ from rilavo.errors import (
 from rilavo.keys import KeyDirectory, b64url_encode, generate_keypair, public_key_bytes
 from rilavo.pop import Request, sign_request
 from rilavo.receipts import ReceiptLog
-from rilavo.revocation import RevocationEntry, RevocationLog, GENESIS_PREV_HASH
+from rilavo.revocation import GENESIS_PREV_HASH, RevocationEntry, RevocationLog
 from rilavo.verifier import NonceCache, verify
 
 VERIFIER_ID = "verifier:checkout.example.com"
@@ -178,7 +180,7 @@ def test_post_compromise_credentials_invalidated_retroactively():
     the signature under that same (compromised) key is perfectly valid."""
     h = Harness()
     compromise_at = NOW + 1000
-    cutoff = datetime.fromtimestamp(compromise_at, tz=timezone.utc)
+    cutoff = datetime.fromtimestamp(compromise_at, tz=UTC)
 
     # A credential issued AFTER compromise, signed by whoever holds the key:
     forged = raw_issue(
@@ -199,7 +201,7 @@ def test_key_valid_before_compromise_still_accepted_within_ttl():
     """Credentials issued BEFORE the cutoff stay valid until natural expiry."""
     h = Harness()
     cred = h.credential(ttl=3600)
-    iat_dt = datetime.fromtimestamp(cred.fields["iat"], tz=timezone.utc)
+    iat_dt = datetime.fromtimestamp(cred.fields["iat"], tz=UTC)
     h.directory.revoke_key(h.issuer.issuer_id, at=iat_dt + __import__("datetime").timedelta(minutes=30))
     result = h.do_verify(cred, h.request())  # verify at iat+1 < cutoff
     assert result.accepted is True

@@ -35,27 +35,32 @@ DELEGATION_NOT_PERMITTED = "delegation_not_permitted"  # v0: dlg must be absent/
 
 
 # Re-export diagnostics for CLI compatibility
-from .diagnostics import EXPLANATIONS, Explanation, explain_rejection, format_explanation
+from .diagnostics import (
+    EXPLANATIONS,
+    Explanation,
+    explain_rejection,
+    format_explanation,
+)
 
 __all__ = [
-    "VerificationError",
     "AUDIENCE_MISMATCH",
-    "EXPIRED",
-    "NOT_YET_VALID",
-    "UNKNOWN_ISSUER",
-    "KEY_NOT_VALID_AT_ISSUANCE",
-    "INVALID_SIGNATURE",
-    "MALFORMED_CREDENTIAL",
-    "UNRECOGNIZED_VERSION",
-    "MISSING_FIELD",
-    "REPLAY_DETECTED",
-    "REVOKED",
-    "REVOCATION_STATE_UNAVAILABLE",
-    "PROOF_OF_POSSESSION_FAILED",
-    "SCOPE_MISMATCH",
     "DELEGATION_NOT_PERMITTED",
+    "EXPIRED",
     "EXPLANATIONS",
+    "INVALID_SIGNATURE",
+    "KEY_NOT_VALID_AT_ISSUANCE",
+    "MALFORMED_CREDENTIAL",
+    "MISSING_FIELD",
+    "NOT_YET_VALID",
+    "PROOF_OF_POSSESSION_FAILED",
+    "REPLAY_DETECTED",
+    "REVOCATION_STATE_UNAVAILABLE",
+    "REVOKED",
+    "SCOPE_MISMATCH",
+    "UNKNOWN_ISSUER",
+    "UNRECOGNIZED_VERSION",
     "Explanation",
+    "VerificationError",
     "explain_rejection",
     "format_explanation",
 ]

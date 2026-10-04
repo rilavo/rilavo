@@ -5,8 +5,8 @@ from __future__ import annotations
 import json
 
 from rilavo.middleware import RilavoASGIMiddleware, RilavoWSGIMiddleware
-from rilavo.testing import offline_test_kit, local_test_agent
 from rilavo.pop import sign_request
+from rilavo.testing import local_test_agent, offline_test_kit
 
 V = "verifier:middleware-test.example"
 
@@ -15,8 +15,8 @@ class Harness:
     def __init__(self):
         self.kit = offline_test_kit()
         self.agent_priv, self.agent_pub = local_test_agent()
-        from rilavo.keys import b64url_encode, public_key_bytes
         from rilavo.keys import b64url_encode as b64e
+        from rilavo.keys import public_key_bytes
         self.agent_pub_b64 = b64e(public_key_bytes(self.agent_pub))
         self.cred_fields = None
 

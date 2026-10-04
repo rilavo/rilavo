@@ -1,6 +1,5 @@
 """Pydantic models for credential verification."""
 
-from typing import Optional, Literal
 from pydantic import BaseModel, Field
 
 
@@ -37,19 +36,19 @@ class VerifyResponse(BaseModel):
     """Response from credential verification."""
 
     accepted: bool = Field(description="Whether verification succeeded")
-    reason_code: Optional[str] = Field(
+    reason_code: str | None = Field(
         default=None,
         description="Rejection reason code (null if accepted)",
     )
-    principal: Optional[str] = Field(
+    principal: str | None = Field(
         default=None,
         description="Credential principal (if accepted)",
     )
-    action_class: Optional[str] = Field(
+    action_class: str | None = Field(
         default=None,
         description="Credential action class (if accepted)",
     )
-    agent: Optional[str] = Field(
+    agent: str | None = Field(
         default=None,
         description="Credential agent (if accepted)",
     )

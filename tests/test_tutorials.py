@@ -23,7 +23,7 @@ PY = sys.executable
 
 def _blocks(md_path: Path) -> list[str]:
     text = md_path.read_text()
-    return re.findall(r"```python\n(.*?)```", text, flags=re.S)
+    return re.findall(r"```python\n(.*?)```", text, flags=re.DOTALL)
 
 
 def _free_port() -> int:

@@ -8,15 +8,15 @@ disclosure window stays an Open parameter, never a hardcoded number.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
-
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from rilavo.api import Issuer, do_issue, do_verify
-from rilavo.credential import DEFAULT_MAX_TTL_SECONDS, IssueRequest, issue as raw_issue
+from rilavo.api import Issuer, do_verify
+from rilavo.credential import DEFAULT_MAX_TTL_SECONDS, IssueRequest
+from rilavo.credential import issue as raw_issue
 from rilavo.errors import KEY_NOT_VALID_AT_ISSUANCE
 from rilavo.keys import (
     FAR_FUTURE,
@@ -58,7 +58,7 @@ class World:
             IssueRequest(principal="acme-corp:runner-04", agent="agt_drill",
                          agent_public_key_b64=b64url_encode(public_key_bytes(self.agent_pub)),
                          action_class="data.read", audience=V),
-            now=datetime.fromtimestamp(at, tz=timezone.utc))
+            now=datetime.fromtimestamp(at, tz=UTC))
         return cred
 
     def verify(self, cred, now):
@@ -106,7 +106,6 @@ def test_sev1_end_to_end_drill():
     assert new_entry is not None
 
     # New credentials under the replacement key verify:
-    from rilavo.api import Issuer as I2
     new_priv = serialization.load_pem_private_key(record.new_private_key_pem,
                                                   password=None)
     assert isinstance(new_priv, Ed25519PrivateKey)
@@ -115,7 +114,7 @@ def test_sev1_end_to_end_drill():
                                       agent="agt_drill",
                                       agent_public_key_b64=b64url_encode(public_key_bytes(w.agent_pub)),
                                       action_class="data.read", audience=V),
-                         now=datetime.fromtimestamp(detected_at + 120, tz=timezone.utc))
+                         now=datetime.fromtimestamp(detected_at + 120, tz=UTC))
     s, n = sign_request(w.agent_priv, "POST", "/x", "data.read")
     r_new = do_verify(V, new_cred, Request("POST","/x","data.read",s,n),
                       w.directory, RevocationLogHolder.log, nonces=NonceCache(),
@@ -263,7 +262,7 @@ def test_run_drill_entry_point():
                 IssueRequest(principal="p", agent="a",
                              agent_public_key_b64=b64url_encode(public_key_bytes(self.pub)),
                              action_class="data.read", audience=V),
-                now=datetime.fromtimestamp(at, tz=timezone.utc))
+                now=datetime.fromtimestamp(at, tz=UTC))
 
         def verify_fn(self, cred, now):
             s, n = sign_request(self.priv, "POST", "/x", "data.read")

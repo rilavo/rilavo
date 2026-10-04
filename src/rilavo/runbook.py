@@ -22,19 +22,18 @@ example), with the overlap window equal to the maximum credential TTL.
 from __future__ import annotations
 
 import time
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from .credential import DEFAULT_MAX_TTL_SECONDS
 from .keys import (
     FAR_FUTURE,
-    KeyDirectory,
     IssuerKeyEntry,
-    generate_keypair,
+    KeyDirectory,
     fingerprint,
+    generate_keypair,
 )
 from .revocation import RevocationLog
 
@@ -117,7 +116,7 @@ class IncidentRunbook:
             raise ValueError(
                 "refusing future cutoff: valid_until must be the DETECTION "
                 "time, not a future time (P-12 step 2)")
-        self.directory.revoke_key(issuer_id, at=datetime.fromtimestamp(cut, tz=timezone.utc))
+        self.directory.revoke_key(issuer_id, at=datetime.fromtimestamp(cut, tz=UTC))
         record = {"issuer_id": issuer_id, "cutoff": cut, "reason": reason}
         self._log("revoke_key", record)
         return record

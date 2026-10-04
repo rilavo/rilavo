@@ -4,7 +4,9 @@ leeway_seconds widens BOTH time-window checks symmetrically:
   accept iff  iat - leeway <= now < exp + leeway
 Default leeway_seconds=0.0 preserves pre-leeway behavior exactly.
 """
-from rilavo.api import Issuer, do_issue, do_verify
+from datetime import UTC
+
+from rilavo.api import Issuer, do_verify
 from rilavo.errors import EXPIRED, NOT_YET_VALID
 from rilavo.keys import KeyDirectory, generate_keypair
 from rilavo.pop import Request, sign_request
@@ -24,16 +26,17 @@ class Harness:
 
     def credential(self, iat=NOW - 60, ttl=3600):
         """Issue a credential backdated to `iat` with the given TTL."""
-        from datetime import datetime, timezone
-        from rilavo.credential import issue as raw_issue, IssueRequest
+        from datetime import datetime
+
+        from rilavo.credential import IssueRequest
+        from rilavo.credential import issue as raw_issue
         from rilavo.keys import b64url_encode, public_key_bytes
-        import time as _time
         req = IssueRequest(
             principal="p", agent="a",
             agent_public_key_b64=b64url_encode(public_key_bytes(self.agent_pub)),
             action_class="data.read", audience=V, ttl_seconds=ttl)
         cred = raw_issue(self.issuer._private_key, self.issuer.issuer_id, req,
-                         now=datetime.fromtimestamp(iat, tz=timezone.utc))
+                         now=datetime.fromtimestamp(iat, tz=UTC))
         return cred
 
     def request(self):

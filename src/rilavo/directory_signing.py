@@ -19,7 +19,6 @@ attacker who can substitute the directory can substitute the signer key too).
 
 from __future__ import annotations
 
-import time
 from dataclasses import dataclass
 
 from cryptography.exceptions import InvalidSignature

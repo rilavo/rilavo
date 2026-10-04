@@ -15,9 +15,8 @@ from __future__ import annotations
 
 import json
 import re
-from pathlib import Path
 from dataclasses import dataclass, field
-
+from pathlib import Path
 
 DISCOVERY_VERSION_DEFAULT = 1
 ISSUER_ID_PATTERN = re.compile(r"^rilavo:iss:[0-9a-f]{16}$")

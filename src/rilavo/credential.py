@@ -9,13 +9,13 @@ from __future__ import annotations
 
 import secrets
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from .canonical import canonicalize
-from .errors import VerificationError, MALFORMED_CREDENTIAL, MISSING_FIELD
-from .keys import b64url_encode, fingerprint, public_key_bytes
+from .errors import MALFORMED_CREDENTIAL, MISSING_FIELD, VerificationError
+from .keys import b64url_encode
 
 REQUIRED_FIELDS = ("iss", "sub", "agt", "apk", "act", "aud", "iat", "exp", "nonce", "sig")
 OPTIONAL_FIELDS = ("dlg", "ctx")
@@ -101,7 +101,7 @@ class Credential:
         return json.dumps(self.fields, separators=(",", ":"))
 
     @classmethod
-    def from_json(cls, s: str) -> "Credential":
+    def from_json(cls, s: str) -> Credential:
         import json
         try:
             return cls(fields=json.loads(s))
@@ -121,7 +121,7 @@ def issue(
     now: datetime | None = None,
 ) -> Credential:
     """The smallest atomic function: claim it, sign it (Mother Blueprint Part I)."""
-    now_dt = now or datetime.now(timezone.utc)
+    now_dt = now or datetime.now(UTC)
     iat = int(now_dt.timestamp())
     exp = iat + request.ttl_seconds
 

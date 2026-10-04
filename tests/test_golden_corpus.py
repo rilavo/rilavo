@@ -1,12 +1,11 @@
 """P5-B: the cross-language golden corpus round-trips through the Python
 reference verifier, and the Go copy cannot silently drift."""
 import json
-from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 from rilavo.canonical import canonicalize
 from rilavo.credential import Credential

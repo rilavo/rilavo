@@ -1,6 +1,6 @@
 """Pydantic models for error responses."""
 
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -15,4 +15,4 @@ class ErrorResponse(BaseModel):
     """Standard error response."""
 
     error: str = Field(description="Reason code")
-    detail: Optional[str] = Field(default=None, description="Human-readable message")
+    detail: str | None = Field(default=None, description="Human-readable message")

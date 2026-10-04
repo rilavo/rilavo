@@ -16,13 +16,12 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / "scripts" / "loadtest.py"
 
-from scripts.loadtest import (  # noqa: E402
+from scripts.loadtest import (
     LABEL,
     build_report,
     human_table,
     percentile,
     run_benchmark,
-    stats_ms,
     write_report,
 )
 

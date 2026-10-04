@@ -5,13 +5,11 @@ issue -> proof-of-possession -> verify cycle runs with zero network and zero
 external infrastructure, using only rilavo.testing helpers.
 """
 
-import pytest
 
 from rilavo.api import Issuer
 from rilavo.testing import (
     DEFAULT_TEST_VERIFIER_ID,
     TEST_ISSUER_FINGERPRINT,
-    TEST_ISSUER_PRIVATE_KEY_PEM,
     TEST_ISSUER_PUBLIC_KEY_PEM,
     local_test_agent,
     local_test_issuer,

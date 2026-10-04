@@ -5,8 +5,8 @@ import pytest
 
 from rilavo.nonce_backends import (
     InMemoryNonceBackend,
-    SQLiteNonceBackend,
     RedisNonceBackend,
+    SQLiteNonceBackend,
     make_nonce_backend,
 )
 

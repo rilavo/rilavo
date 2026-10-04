@@ -8,8 +8,8 @@ the generator only writes files and never executes them.
 """
 from __future__ import annotations
 
-from pathlib import Path
 import json
+from pathlib import Path
 
 # ============================================================================
 # NEXT.JS MIDDLEWARE TEMPLATE

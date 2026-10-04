@@ -6,11 +6,6 @@ a self-contained proposal artifact per the Track-D rules.
 
 from __future__ import annotations
 
-import base64
-
-import pytest
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
-
 from rilavo.directory_signing import (
     PROPOSAL_STATUS,
     DirectoryPayload,
@@ -67,7 +62,7 @@ def test_payload_serialization_deterministic_and_field_exact():
     assert decoded["valid_until"] == -1            # None serialized as -1
 
 
-import json  # noqa: E402  (used above via json.loads after canonical_bytes)
+import json
 
 
 def test_none_valid_until_serializes_as_minus_one():

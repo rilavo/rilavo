@@ -8,9 +8,9 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.testclient import TestClient
 
 from rilavo.fastapi import require_rilavo_agent
-from rilavo.testing import offline_test_kit, local_test_agent
-from rilavo.pop import sign_request
 from rilavo.keys import b64url_encode, public_key_bytes
+from rilavo.pop import sign_request
+from rilavo.testing import local_test_agent, offline_test_kit
 
 V = "verifier:fastapi-dep.example"
 _kit = offline_test_kit()
@@ -79,7 +79,7 @@ def test_wrong_audience_401():
 def test_expired_401():
     client = TestClient(build_app())
     import time as time_mod
-    from rilavo.keys import public_key_bytes as pkb, b64url_encode as b64e
+
     past_iat = int(time_mod.time()) - 100000
     fields = {
         "iss": "rilavo:iss:test", "sub": "p", "agt": "a",

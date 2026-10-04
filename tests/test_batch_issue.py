@@ -2,16 +2,11 @@
 
 from __future__ import annotations
 
-import json
-
-import pytest
-
 from rilavo.api import Issuer, batch_issue, do_verify
 from rilavo.credential import IssueRequest
 from rilavo.errors import VerificationError
-from rilavo.keys import KeyDirectory
 from rilavo.pop import Request, sign_request
-from rilavo.testing import offline_test_kit, local_test_agent
+from rilavo.testing import local_test_agent, offline_test_kit
 
 
 class BatchHarness:
@@ -51,7 +46,6 @@ class BatchHarness:
             )
             return result
         except VerificationError as e:
-            from rilavo.verifier import VerifyResult
             return type("R", (), {"accepted": False, "reason_code": e.reason_code})()
 
 

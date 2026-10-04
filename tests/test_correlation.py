@@ -8,9 +8,9 @@ claims P-13's Open status changed.
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 
-from rilavo.api import Issuer, do_issue
-from rilavo.credential import IssueRequest, issue as raw_issue
+from rilavo.api import Issuer
 from rilavo.correlation import (
     LABEL,
     CorrelationGapMonitor,
@@ -18,8 +18,8 @@ from rilavo.correlation import (
     relationship_subject_id,
     scoped_issue_args,
 )
-from datetime import datetime, timezone
-
+from rilavo.credential import IssueRequest
+from rilavo.credential import issue as raw_issue
 
 T0 = 1_760_000_000
 
@@ -96,7 +96,7 @@ def _issue_with(harness_issuer, subject, audience, policy):
         IssueRequest(principal=scoped, agent="agt_x",
                      agent_public_key_b64="k" * 43,
                      action_class="data.read", audience=audience),
-        now=datetime.fromtimestamp(T0, tz=timezone.utc))
+        now=datetime.fromtimestamp(T0, tz=UTC))
 
 
 def test_policy_default_is_off():
@@ -123,7 +123,7 @@ def test_mode_off_produces_identical_credential_shape_to_before():
                                     agent_public_key_b64=apub_b64,
                                     action_class="data.read",
                                     audience="verifier:a"),
-                       now=datetime.fromtimestamp(T0, tz=timezone.utc))
+                       now=datetime.fromtimestamp(T0, tz=UTC))
     off_policy = CorrelationPolicy()   # default OFF
     after = _issue_with(issuer, "global-sub", "verifier:a", off_policy)
 

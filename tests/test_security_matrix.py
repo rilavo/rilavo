@@ -35,7 +35,7 @@ def _all_test_defs():
     defs = set()
     for d in TEST_DIRS:
         for p in sorted(d.glob("test_*.py")):
-            defs |= set(re.findall(r"^def (test_\w+)", p.read_text(), re.M))
+            defs |= set(re.findall(r"^def (test_\w+)", p.read_text(), re.MULTILINE))
     return defs
 
 
@@ -143,19 +143,19 @@ def test_residual_correlation_gap_stays_honestly_open():
 def test_disclosure_contact_is_placeholder_and_window_open():
     for doc in (TOP_SECURITY, PROTO_SECURITY):
         text = doc.read_text()
-        assert re.search("placeholder", text, re.I), f"{doc.name}: contact must stay a placeholder"
-        assert re.search(r"disclosure window.{0,80}OPEN", text, re.S | re.I), (
+        assert re.search("placeholder", text, re.IGNORECASE), f"{doc.name}: contact must stay a placeholder"
+        assert re.search(r"disclosure window.{0,80}OPEN", text, re.DOTALL | re.IGNORECASE), (
             f"{doc.name}: disclosure window must stay OPEN"
         )
         # no committed number of days/months anywhere near 'window'
-        assert not re.search(r"window[^.]*\b\d+\s*(day|month|year)", text, re.I), (
+        assert not re.search(r"window[^.]*\b\d+\s*(day|month|year)", text, re.IGNORECASE), (
             f"{doc.name}: a disclosure window length was hardcoded"
         )
 
 
 def test_reaudit_trigger_preserved():
     trigger = re.compile(
-        r"P-0?6.{0,40}P-0?7.{0,40}P-0?9", re.S
+        r"P-0?6.{0,40}P-0?7.{0,40}P-0?9", re.DOTALL
     )
     assert trigger.search(PROTO_SECURITY.read_text()), (
         "protocol SECURITY.md lost the P-06/P-07/P-09 re-audit trigger"

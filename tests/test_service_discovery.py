@@ -22,7 +22,6 @@ def test_discovery_off_returns_404():
 
 
 def test_discovery_on_serves_schema_valid_document():
-    from rilavo.discovery import validate_discovery_document
     svc = RilavoService(port=0, serve_discovery=True).start()
     try:
         import urllib.request

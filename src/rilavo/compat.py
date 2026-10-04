@@ -23,8 +23,8 @@ PRECEDENCE, documented and enforced (both credentials present):
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Callable
+from collections.abc import Callable
+from dataclasses import dataclass
 
 from .api import VerifyResult, do_verify
 from .credential import Credential

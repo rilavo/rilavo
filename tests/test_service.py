@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from rilavo.keys import generate_keypair, b64url_encode, public_key_bytes
+from rilavo.keys import b64url_encode, generate_keypair, public_key_bytes
 from rilavo.pop import sign_request
 from rilavo.service import RilavoService, get, post
 
@@ -99,8 +99,8 @@ def test_revoke_over_http_then_verify_rejected(svc, agent):
 
 
 def test_malformed_json_rejected_cleanly(svc):
-    import urllib.request
     import json
+    import urllib.request
     req = urllib.request.Request(svc.url + "/verify", data=b"{not json",
                                  headers={"Content-Type": "application/json"},
                                  method="POST")

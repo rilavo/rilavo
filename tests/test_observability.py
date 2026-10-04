@@ -6,12 +6,12 @@ import base64
 import json
 import re
 
-from tests.test_conformance import Harness
-from rilavo.errors import VerificationError
-from rilavo.verifier import NonceCache
 import pytest
 
+from rilavo.errors import VerificationError
 from rilavo.observability import Metrics, timed_verify, timed_verify_raising
+from rilavo.verifier import NonceCache
+from tests.test_conformance import Harness
 
 
 class Clock:
@@ -80,6 +80,7 @@ def test_timed_verify_wrapper_returns_result_unchanged(harness_like=None):
     m = _fresh_metrics()
 
     from unittest.mock import patch
+
     from rilavo.api import do_verify
     with patch("rilavo.verifier.time") as fake_time:
         fake_time.time.return_value = cred.fields["iat"] + 1
@@ -118,10 +119,6 @@ def test_timed_verify_raising_records_reason_then_reraises():
 
 
 # --- imports/helpers used above -------------------------------------------------
-import json            # noqa: E402
-import pytest          # noqa: E402
-from rilavo.errors import VerificationError   # noqa: E402
-from rilavo.verifier import NonceCache        # noqa: E402
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 """Developer-UX diagnostics for Rilavo rejection reason codes."""
 from dataclasses import dataclass
-from typing import List
 
 from .errors import (
     AUDIENCE_MISMATCH,
@@ -16,8 +15,8 @@ from .errors import (
     REVOCATION_STATE_UNAVAILABLE,
     REVOKED,
     SCOPE_MISMATCH,
-    UNRECOGNIZED_VERSION,
     UNKNOWN_ISSUER,
+    UNRECOGNIZED_VERSION,
 )
 
 

@@ -6,21 +6,20 @@ Provides tracing, metrics, and structured logging for verification operations.
 
 from __future__ import annotations
 
-import logging
 import os
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator, Optional
+from typing import Any
 
-from opentelemetry import trace, metrics
-from opentelemetry.exporter.prometheus import PrometheusMetricReader
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.grpc.metric_exporter import OTLPMetricExporter
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.prometheus import PrometheusMetricReader
+from opentelemetry.instrumentation.logging import LoggingInstrumentor
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.resources import SERVICE_NAME, SERVICE_VERSION, Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.resources import Resource, SERVICE_NAME, SERVICE_VERSION
-from opentelemetry.instrumentation.logging import LoggingInstrumentor
-from typing import Optional, Any
 
 # Semantic conventions for Rilavo
 RILAVO_SERVICE_NAME = "rilavo"
@@ -48,7 +47,7 @@ class RilavoInstrumentation:
         self,
         service_name: str = RILAVO_SERVICE_NAME,
         service_version: str = RILAVO_SERVICE_VERSION,
-        otlp_endpoint: Optional[str] = None,
+        otlp_endpoint: str | None = None,
         enable_prometheus: bool = True,
         enable_otlp: bool = False,
     ):
@@ -58,19 +57,19 @@ class RilavoInstrumentation:
         self.enable_prometheus = enable_prometheus
         self.enable_otlp = enable_otlp or bool(self.otlp_endpoint)
 
-        self._tracer_provider: Optional[TracerProvider] = None
-        self._meter_provider: Optional[MeterProvider] = None
-        self._tracer: Optional[trace.Tracer] = None
-        self._meter: Optional[metrics.Meter] = None
+        self._tracer_provider: TracerProvider | None = None
+        self._meter_provider: MeterProvider | None = None
+        self._tracer: trace.Tracer | None = None
+        self._meter: metrics.Meter | None = None
         self._initialized = False
 
         # Metric instruments (lazy initialization)
-        self._verification_duration: Optional[Any] = None
-        self._verification_result_counter: Optional[Any] = None
-        self._credential_issued_counter: Optional[Any] = None
-        self._replay_detected_counter: Optional[Any] = None
-        self._nonce_cache_size_gauge: Optional[Any] = None
-        self._issuer_directory_lookups_counter: Optional[Any] = None
+        self._verification_duration: Any | None = None
+        self._verification_result_counter: Any | None = None
+        self._credential_issued_counter: Any | None = None
+        self._replay_detected_counter: Any | None = None
+        self._nonce_cache_size_gauge: Any | None = None
+        self._issuer_directory_lookups_counter: Any | None = None
 
     def initialize(self) -> None:
         """Initialize OpenTelemetry instrumentation."""
@@ -176,8 +175,8 @@ class RilavoInstrumentation:
     @contextmanager
     def verification_span(
         self,
-        credential_issuer: Optional[str] = None,
-        credential_agent: Optional[str] = None,
+        credential_issuer: str | None = None,
+        credential_agent: str | None = None,
     ) -> Generator[trace.Span, None, None]:
         """Create a span for credential verification."""
         if not self._initialized:
@@ -193,9 +192,9 @@ class RilavoInstrumentation:
     def record_verification(
         self,
         accepted: bool,
-        reason_code: Optional[str] = None,
+        reason_code: str | None = None,
         duration_ms: float = 0.0,
-        credential_issuer: Optional[str] = None,
+        credential_issuer: str | None = None,
     ) -> None:
         """Record verification result metrics."""
         if not self._initialized:
@@ -228,7 +227,7 @@ class RilavoInstrumentation:
         if self._credential_issued_counter:
             self._credential_issued_counter.add(1, attributes=attributes)
 
-    def record_replay_detected(self, credential_issuer: Optional[str] = None) -> None:
+    def record_replay_detected(self, credential_issuer: str | None = None) -> None:
         """Record replay detection."""
         if not self._initialized:
             self.initialize()
@@ -271,7 +270,7 @@ class RilavoInstrumentation:
 
 
 # Global instrumentation instance
-_instrumentation: Optional[RilavoInstrumentation] = None
+_instrumentation: RilavoInstrumentation | None = None
 
 
 def get_instrumentation() -> RilavoInstrumentation:
@@ -285,7 +284,7 @@ def get_instrumentation() -> RilavoInstrumentation:
 def initialize_instrumentation(
     service_name: str = RILAVO_SERVICE_NAME,
     service_version: str = RILAVO_SERVICE_VERSION,
-    otlp_endpoint: Optional[str] = None,
+    otlp_endpoint: str | None = None,
     enable_prometheus: bool = True,
     enable_otlp: bool = False,
 ) -> RilavoInstrumentation:
@@ -315,8 +314,8 @@ def get_meter() -> metrics.Meter:
 
 @contextmanager
 def verification_span(
-    credential_issuer: Optional[str] = None,
-    credential_agent: Optional[str] = None,
+    credential_issuer: str | None = None,
+    credential_agent: str | None = None,
 ) -> Generator[trace.Span, None, None]:
     """Create a verification span."""
     with get_instrumentation().verification_span(credential_issuer, credential_agent) as span:
@@ -325,9 +324,9 @@ def verification_span(
 
 def record_verification(
     accepted: bool,
-    reason_code: Optional[str] = None,
+    reason_code: str | None = None,
     duration_ms: float = 0.0,
-    credential_issuer: Optional[str] = None,
+    credential_issuer: str | None = None,
 ) -> None:
     """Record verification result."""
     get_instrumentation().record_verification(accepted, reason_code, duration_ms, credential_issuer)
@@ -338,7 +337,7 @@ def record_credential_issued(issuer: str, agent: str) -> None:
     get_instrumentation().record_credential_issued(issuer, agent)
 
 
-def record_replay_detected(credential_issuer: Optional[str] = None) -> None:
+def record_replay_detected(credential_issuer: str | None = None) -> None:
     """Record replay detection."""
     get_instrumentation().record_replay_detected(credential_issuer)
 

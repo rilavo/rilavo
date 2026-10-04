@@ -3,13 +3,11 @@ HTTP targets; informational posture; exit codes reflect outcomes."""
 
 from __future__ import annotations
 
-import importlib.util
-import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
-from rilavo.conformance_cli import render_report  # noqa: E402
-import rilavo.conformance_cli as cc               # noqa: E402
+import rilavo.conformance_cli as cc
+from rilavo.conformance_cli import render_report
 
 
 def test_local_target_all_checks_pass():
@@ -21,7 +19,7 @@ def test_local_target_all_checks_pass():
 
 
 def test_report_language_is_informational_never_certifying():
-    from rilavo.conformance_cli import render_report, run_local_checks
+    from rilavo.conformance_cli import run_local_checks
     text = render_report(run_local_checks()).lower()
     for banned in ("certified", "certification granted", "approved", "compliant"):
         assert banned not in text, f"certification language found: {banned}"
@@ -29,7 +27,6 @@ def test_report_language_is_informational_never_certifying():
 
 
 def test_http_target_full_pass():
-    import threading
 
     from rilavo.service import RilavoService
 

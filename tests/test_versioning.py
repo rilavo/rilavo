@@ -8,6 +8,8 @@ never silent misinterpretation, and never conflated with shape failures.
 
 from __future__ import annotations
 
+from datetime import UTC
+
 from rilavo.api import Issuer, do_issue, do_verify
 from rilavo.credential import Credential
 from rilavo.errors import INVALID_SIGNATURE, UNRECOGNIZED_VERSION
@@ -53,15 +55,17 @@ def test_explicit_ver_1_accepted():
     """A credential may make the version explicit without structural change."""
     h = Harness()
     # re-sign so the explicit field is covered by a valid signature:
-    from rilavo.credential import issue as raw_issue, IssueRequest
+    from datetime import datetime
+
+    from rilavo.credential import IssueRequest
+    from rilavo.credential import issue as raw_issue
     from rilavo.keys import b64url_encode, public_key_bytes
-    from datetime import datetime, timezone
     cred = raw_issue(
         h.issuer._private_key, h.issuer.issuer_id,
         IssueRequest(principal="p", agent="a",
                      agent_public_key_b64=b64url_encode(public_key_bytes(h.agent_pub)),
                      action_class="data.read", audience=V),
-        now=datetime.fromtimestamp(1_760_000_000, tz=timezone.utc))
+        now=datetime.fromtimestamp(1_760_000_000, tz=UTC))
     cred.fields["ver"] = 1
     # re-sign with ver included (a real ver:1 issuer would sign it):
     from rilavo.canonical import canonicalize
@@ -110,16 +114,18 @@ def test_version_gate_is_distinct_from_shape_failures():
 
 
 def _signed_ver1_credential(h):
-    from rilavo.credential import issue as raw_issue, IssueRequest
-    from rilavo.keys import b64url_encode, public_key_bytes
-    from datetime import datetime, timezone
+    from datetime import datetime
+
     from rilavo.canonical import canonicalize
+    from rilavo.credential import IssueRequest
+    from rilavo.credential import issue as raw_issue
+    from rilavo.keys import b64url_encode, public_key_bytes
     cred = raw_issue(
         h.issuer._private_key, h.issuer.issuer_id,
         IssueRequest(principal="p", agent="a",
                      agent_public_key_b64=b64url_encode(public_key_bytes(h.agent_pub)),
                      action_class="data.read", audience=V),
-        now=datetime.fromtimestamp(1_760_000_000, tz=timezone.utc))
+        now=datetime.fromtimestamp(1_760_000_000, tz=UTC))
     cred.fields["ver"] = 1
     sig = h.issuer._private_key.sign(canonicalize(cred.signing_payload()))
     cred.fields["sig"] = b64url_encode(sig)
