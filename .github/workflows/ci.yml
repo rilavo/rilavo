@@ -49,6 +49,8 @@ jobs:
         run: uv pip install mypy
       - name: Type check (mypy)
         run: uv run mypy src/rilavo --ignore-missing-imports
+      - name: Install ruff
+        run: uv pip install ruff
       - name: Lint (ruff)
         run: uv run ruff check src/rilavo tests/
 
