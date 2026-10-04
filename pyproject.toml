@@ -8,6 +8,7 @@ license = { text = "Apache-2.0" }
 dependencies = [
     "redis>=5.0",
     "cryptography>=42",
+    "idna>=3.7",
     "opentelemetry-api>=1.44.0",
     "opentelemetry-sdk>=1.44.0",
     "opentelemetry-exporter-prometheus==0.65b0",
