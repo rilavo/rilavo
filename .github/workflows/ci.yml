@@ -253,14 +253,8 @@ jobs:
           VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "//' | sed 's/"//')
           echo "pyproject.toml version: $VERSION"
           
-          # Extract version from __init__.py using Python (more reliable than sed)
-          PY_VERSION=$(cd src/rilavo && python3 << 'EOF'
-import re
-content = open('__init__.py').read()
-match = re.search(r'__version__\s*=\s*["']([^"']+)["']', content)
-print(match.group(1))
-EOF
-)
+          # Extract version from __init__.py using Python
+          PY_VERSION=$(cd src/rilavo && python3 -c "import re, sys; content = open('__init__.py').read(); match = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', content); print(match.group(1))")
           echo "Python package version: $PY_VERSION"
           
           if [ "$VERSION" != "$PY_VERSION" ]; then
