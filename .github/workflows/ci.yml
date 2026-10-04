@@ -210,11 +210,11 @@ jobs:
       - name: Test installation
         run: |
           uv pip install dist/rilavo-0.1.0-py3-none-any.whl
-          python -c "import rilavo; print(rilavo.__version__)"
+          uv run python -c "import rilavo; print(rilavo.__version__)"
       - name: Test editable installation
         run: |
           uv pip install -e .
-          python -c "import rilavo; print(rilavo.__version__)"
+          uv run python -c "import rilavo; print(rilavo.__version__)"
 
   # Smoke Tests
   smoke-tests:
@@ -259,12 +259,12 @@ jobs:
       - name: Check Python package version
         run: |
           cd src/rilavo
-          PY_VERSION=$(grep '__version__' __init__.py | sed -E "s/.*= '([^']+)'.*/\1/")
+          PY_VERSION=$(grep '__version__' __init__.py | sed -E 's/.*= ["''']([^"''']+)["'''].*/\1/')
           echo "Python package version: $PY_VERSION"
       - name: Check versions match
         run: |
           VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "//' | sed 's/"//')
-          PY_VERSION=$(grep '__version__' src/rilavo/__init__.py | sed -E "s/.*= '([^']+)'.*/\1/")
+          PY_VERSION=$(grep '__version__' src/rilavo/__init__.py | sed -E 's/.*= ["''']([^"''']+)["'''].*/\1/')
           if [ "$VERSION" != "$PY_VERSION" ]; then
             echo "Version mismatch: pyproject.toml=$VERSION vs __init__.py=$PY_VERSION"
             exit 1
