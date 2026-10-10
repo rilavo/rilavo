@@ -14,7 +14,7 @@ dependencies = [
     "opentelemetry-exporter-prometheus==0.65b0",
     "opentelemetry-exporter-otlp>=1.44.0",
     "opentelemetry-instrumentation==0.65b0",
-    "opentelemetry-instrumentation-logging==0.65b0",
+    "opentelemetry-instrumentation-logging==0.66b1",
 ]
 keywords = ["agents", "authorization", "credentials", "ed25519", "mcp", "opentelemetry"]
 classifiers = [
