@@ -17,7 +17,7 @@
     "@opentelemetry/instrumentation-http": "^0.42.0",
     "@opentelemetry/semantic-conventions": "^1.13.0",
     "@opentelemetry/sdk-trace-base": "^1.13.0",
-    "@opentelemetry/sdk-node": "^0.42.0",
+    "@opentelemetry/sdk-node": "^0.223.0",
     "ioredis": "^5.0.0"
   },
   "keywords": [
