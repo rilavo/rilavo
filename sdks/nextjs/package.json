@@ -12,7 +12,7 @@
     "@opentelemetry/resources": "^1.13.0",
     "@opentelemetry/sdk-trace-node": "^1.13.0",
     "@opentelemetry/sdk-metrics": "^1.13.0",
-    "@opentelemetry/exporter-prometheus": "^0.40.0",
+    "@opentelemetry/exporter-prometheus": "^0.223.0",
     "@opentelemetry/instrumentation": "^0.42.0",
     "@opentelemetry/instrumentation-http": "^0.42.0",
     "@opentelemetry/semantic-conventions": "^1.13.0",
