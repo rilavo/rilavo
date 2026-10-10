@@ -11,7 +11,7 @@ dependencies = [
     "idna>=3.7",
     "opentelemetry-api>=1.44.0",
     "opentelemetry-sdk>=1.44.0",
-    "opentelemetry-exporter-prometheus==0.65b0",
+    "opentelemetry-exporter-prometheus==0.66b1",
     "opentelemetry-exporter-otlp>=1.44.0",
     "opentelemetry-instrumentation==0.65b0",
     "opentelemetry-instrumentation-logging==0.65b0",
