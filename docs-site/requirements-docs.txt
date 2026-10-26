@@ -4,5 +4,5 @@ mkdocstrings[python]>=0.26
 mkdocs-minify-plugin>=0.7
 mkdocs-git-revision-date-localized-plugin>=1.2
 mkdocs-git-authors-plugin>=0.7
-mkdocs-mermaid2-plugin>=1.1
+mkdocs-mermaid2-plugin>=1.2.3
 pymdown-extensions>=10.0
